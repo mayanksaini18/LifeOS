@@ -146,6 +146,14 @@ exports.phoneLogin = async (req, res, next) => {
     if (!idToken) return res.status(400).json({ message: 'Firebase ID token is required' });
 
     const decoded = await admin.auth().verifyIdToken(idToken);
+
+    // Defense-in-depth: the token signature is already verified above, but
+    // assert it was issued via the phone sign-in provider so a token minted
+    // through another provider (e.g. Google) can't be POSTed here.
+    if (decoded.firebase?.sign_in_provider !== 'phone') {
+      return res.status(401).json({ message: 'Token was not issued via phone sign-in' });
+    }
+
     const phone = decoded.phone_number;
     if (!phone) return res.status(400).json({ message: 'Token does not contain a phone number' });
 
@@ -154,7 +162,7 @@ exports.phoneLogin = async (req, res, next) => {
       user = await User.create({
         name: decoded.name || 'there',
         phone,
-        emailVerified: false,
+        phoneVerified: true,
       });
     }
 

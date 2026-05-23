@@ -34,14 +34,6 @@ export function PhoneLoginForm() {
   const verifierRef = useRef<RecaptchaVerifier | null>(null);
   const confirmationRef = useRef<ConfirmationResult | null>(null);
 
-  // Tear down the invisible reCAPTCHA when leaving the page.
-  useEffect(() => {
-    return () => {
-      verifierRef.current?.clear();
-      verifierRef.current = null;
-    };
-  }, []);
-
   function getVerifier() {
     if (!verifierRef.current) {
       verifierRef.current = new RecaptchaVerifier(auth, "recaptcha-container", {
@@ -51,10 +43,31 @@ export function PhoneLoginForm() {
     return verifierRef.current;
   }
 
+  // Always null the ref, even if clear() throws (Firebase may have already
+  // destroyed the widget) — otherwise getVerifier() would try to attach a
+  // second reCAPTCHA to the same container and the user couldn't retry.
   function resetVerifier() {
-    verifierRef.current?.clear();
-    verifierRef.current = null;
+    try {
+      verifierRef.current?.clear();
+    } catch {
+      // widget already gone — nothing to clean up
+    } finally {
+      verifierRef.current = null;
+    }
   }
+
+  // Tear down the invisible reCAPTCHA when leaving the page.
+  useEffect(() => {
+    return () => {
+      try {
+        verifierRef.current?.clear();
+      } catch {
+        // widget already gone
+      } finally {
+        verifierRef.current = null;
+      }
+    };
+  }, []);
 
   async function handleSendCode(e: React.FormEvent) {
     e.preventDefault();
