@@ -2,8 +2,11 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
   name: { type: String, maxlength: 50 },
-  email: { type: String, required: true, unique: true, lowercase: true },
-  password: { type: String, required: true },
+  email: { type: String, unique: true, sparse: true, lowercase: true },
+  phone: { type: String, unique: true, sparse: true },
+  // Password is required only for accounts without a phone (email/Google
+  // accounts). Phone accounts authenticate via Firebase and have no password.
+  password: { type: String, required: function () { return !this.phone; } },
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
   refreshToken: { type: String },
@@ -22,6 +25,7 @@ const userSchema = new mongoose.Schema({
   pushSubscriptions: { type: [Object], default: [] },
   emailReminders: { type: Boolean, default: false },
   emailVerified: { type: Boolean, default: false },
+  phoneVerified: { type: Boolean, default: false },
   emailVerificationTokenHash: { type: String, index: true },
   emailVerificationExpiresAt: { type: Date },
 }, { timestamps: true });
