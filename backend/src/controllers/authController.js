@@ -40,7 +40,7 @@ function setCookieAndRespond(res, user, accessToken, refreshToken) {
   res.json({
     accessToken,
     user: {
-      id: user._id, email: user.email, name: user.name, xp: user.xp, level: user.level,
+      id: user._id, email: user.email, phone: user.phone, name: user.name, xp: user.xp, level: user.level,
       goals: user.goals ?? { sleep: 7, exercise: 4, mood: 3, water: 8 },
       reminderTimes: user.reminderTimes ?? { mood: '', sleep: '', water: '', exercise: '' },
       emailReminders: user.emailReminders ?? false,
@@ -140,6 +140,38 @@ exports.googleLogin = async (req, res, next) => {
   }
 };
 
+exports.phoneLogin = async (req, res, next) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) return res.status(400).json({ message: 'Firebase ID token is required' });
+
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    const phone = decoded.phone_number;
+    if (!phone) return res.status(400).json({ message: 'Token does not contain a phone number' });
+
+    let user = await User.findOne({ phone });
+    if (!user) {
+      user = await User.create({
+        name: decoded.name || 'there',
+        phone,
+        emailVerified: false,
+      });
+    }
+
+    const accessToken = createAccessToken({ id: user._id });
+    const refreshToken = createRefreshToken({ id: user._id });
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    setCookieAndRespond(res, user, accessToken, refreshToken);
+  } catch (err) {
+    if (err.code === 'auth/id-token-expired' || err.code === 'auth/argument-error') {
+      return res.status(401).json({ message: 'Invalid or expired phone token' });
+    }
+    next(err);
+  }
+};
+
 exports.verifyEmail = async (req, res, next) => {
   try {
     const token = (req.query.token || '').toString();
@@ -219,6 +251,7 @@ exports.getMe = async (req, res) => {
     id: req.user._id,
     name: req.user.name,
     email: req.user.email,
+    phone: req.user.phone,
     xp: req.user.xp,
     level: req.user.level,
     goals: req.user.goals ?? { sleep: 7, exercise: 4, mood: 3, water: 8 },

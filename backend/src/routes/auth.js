@@ -4,7 +4,7 @@ const { body } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const auth = require('../middlewares/auth');
 const validate = require('../middlewares/validate');
-const { register, login, refreshToken, getMe, googleLogin, logout, verifyEmail, resendVerification } = require('../controllers/authController');
+const { register, login, refreshToken, getMe, googleLogin, phoneLogin, logout, verifyEmail, resendVerification } = require('../controllers/authController');
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -39,6 +39,7 @@ router.post('/register', authLimiter, registerValidation, validate, register);
 router.post('/login', authLimiter, loginValidation, validate, login);
 router.post('/refresh', refreshToken);
 router.post('/google', authLimiter, googleLogin);
+router.post('/phone', authLimiter, phoneLogin);
 router.post('/logout', logout);
 router.get('/me', auth, getMe);
 router.get('/verify-email', verifyEmail);
