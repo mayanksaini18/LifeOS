@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/welcome", "/login", "/register"];
+const PUBLIC_PATHS = ["/welcome", "/login", "/register", "/phone-login"];
 
 function isTokenValid(tokenValue: string): boolean {
   try {
