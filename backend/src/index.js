@@ -28,6 +28,7 @@ if (!admin.apps.length) {
 
 const app = express();
 connectDB();
+
 const MONGO_URI = 'mongodb+srv://mayanksaini0416_db_user:%40Mayank0416@cluster0.v0rdlpc.mongodb.net/smart-health-tracker';
 console.log('MONGO_URI:', MONGO_URI);
 
