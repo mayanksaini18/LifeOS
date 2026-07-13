@@ -6,7 +6,7 @@ const validate = require('../middlewares/validate');
 const {
   updateGoals, updateReminders,
   subscribePush, unsubscribePush, getVapidPublicKey,
-  updateEmailReminders,
+  updateEmailReminders, completeOnboarding,
 } = require('../controllers/settingsController');
 const { getSuggestions } = require('../controllers/smartRemindersController');
 
@@ -36,5 +36,7 @@ router.delete('/push-unsubscribe', unsubscribePush);
 router.put('/email-reminders', [
   body('enabled').isBoolean(),
 ], validate, updateEmailReminders);
+
+router.put('/onboarding-complete', completeOnboarding);
 
 module.exports = router;
