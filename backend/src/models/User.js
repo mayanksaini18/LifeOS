@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema({
   emailReminders: { type: Boolean, default: false },
   emailVerified: { type: Boolean, default: false },
   phoneVerified: { type: Boolean, default: false },
+  onboardingComplete: { type: Boolean, default: false },
   emailVerificationTokenHash: { type: String, index: true },
   emailVerificationExpiresAt: { type: Date },
 }, { timestamps: true });
