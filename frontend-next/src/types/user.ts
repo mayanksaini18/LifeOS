@@ -22,6 +22,7 @@ export interface User {
   goals: UserGoals;
   reminderTimes: ReminderTimes;
   emailReminders: boolean;
+  onboardingComplete: boolean;
 }
 
 export interface AuthResponse {
