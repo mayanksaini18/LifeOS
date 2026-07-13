@@ -3,14 +3,22 @@ import { Reveal } from "@/components/landing/reveal";
 import { LANDING_MODULES } from "@/lib/landing-data";
 
 /**
- * ModulesSection — the feature grid of the six wellness modules. Each card is
- * display-only (no link) so there are no dead pre-auth clicks, and closes with
- * a tiny faux meter that echoes the dashboard's GoalBar. Widths are fixed and
- * deterministic (indexed by position) so the markup stays SSR-stable.
+ * ModulesSection — the six wellness modules. The layout is theme-aware:
+ *
+ *  - Light theme keeps the card grid (each card closes with a tiny meter that
+ *    echoes the dashboard's GoalBar).
+ *  - Dark theme swaps to a calmer editorial index list — two typographic
+ *    columns with hairline dividers and no cards.
+ *
+ * Both layouts are rendered and toggled purely with CSS `dark:` variants, so
+ * there is no theme-guessing on the server and no hydration mismatch.
  */
 
 // Pleasant, deterministic meter widths — indexed by module position.
 const METER_WIDTHS = ["72%", "64%", "80%", "58%", "68%", "85%"];
+
+// Split the modules into two balanced columns for the dark editorial list.
+const LIST_COLUMNS = [LANDING_MODULES.slice(0, 3), LANDING_MODULES.slice(3, 6)];
 
 export function ModulesSection() {
   return (
@@ -21,7 +29,8 @@ export function ModulesSection() {
         subtitle="Mood, sleep, water, habits, fitness, and insights — gently connected, never overwhelming."
       />
 
-      <div className="mt-14 md:mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
+      {/* Light theme — card grid */}
+      <div className="mt-14 grid grid-cols-1 gap-4 items-stretch sm:grid-cols-2 lg:grid-cols-3 md:mt-16 dark:hidden">
         {LANDING_MODULES.map((mod, index) => (
           <Reveal key={mod.key} delay={index * 60}>
             <div className="group h-full rounded-2xl border bg-card p-6 transition-colors hover:bg-muted/50">
@@ -49,6 +58,42 @@ export function ModulesSection() {
               </div>
             </div>
           </Reveal>
+        ))}
+      </div>
+
+      {/* Dark theme — editorial index list */}
+      <div className="mt-14 hidden grid-cols-1 gap-x-16 md:mt-16 lg:grid-cols-2 dark:grid">
+        {LIST_COLUMNS.map((column, ci) => (
+          <div key={ci} className="flex flex-col">
+            {column.map((mod, ri) => (
+              <Reveal
+                key={mod.key}
+                delay={(ci * 3 + ri) * 60}
+                className="border-b border-border/60 last:border-b-0"
+              >
+                <div className="group flex items-start gap-4 py-6">
+                  <div
+                    className={
+                      "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border " +
+                      mod.iconBg +
+                      " " +
+                      mod.ring
+                    }
+                  >
+                    <mod.icon className={"h-4 w-4 " + mod.iconColor} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base font-medium tracking-tight">
+                      {mod.label}
+                    </h3>
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                      {mod.blurb}
+                    </p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         ))}
       </div>
     </Section>
