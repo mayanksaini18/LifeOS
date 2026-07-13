@@ -102,8 +102,8 @@ across all auth methods.
 
 ### `OnboardingWizard` component
 - Three steps, each: a friendly prompt, a stepper (±) control pre-filled with
-  the model default, progress dots, Back / Next, a per-step "Skip", and an
-  overall "Skip for now".
+  the model default, progress dots, Back / Next, and a "Skip for now" affordance
+  shown on every step (so any step can bail out — each step is skippable).
   - Defaults: sleep `7`, water `8`, exercise `4`.
 - **Finish** → `PUT /settings/goals` with the three current values →
   `PUT /settings/onboarding-complete` → update the auth store →
@@ -130,15 +130,24 @@ across all auth methods.
 
 ## Testing
 
-- **Backend:**
-  - `User` model defaults `onboardingComplete` to `false`.
-  - `PUT /settings/onboarding-complete` requires auth and sets the flag true.
-  - (Existing `PUT /settings/goals` validation already covered.)
-- **Frontend:** (vitest setup already landing on this branch)
-  - `OnboardingWizard`: step navigation, per-step skip, finish saves goals +
-    marks complete, "Skip for now" marks complete without saving goals.
-  - Redirect gate: user with `onboardingComplete === false` is routed to
-    `/onboarding`; onboarded user is not.
+The repo has **no backend test runner**, and frontend "tests" are **Storybook
+stories run as browser interaction tests** via the storybook-vitest addon. We
+match those existing patterns rather than introduce new frameworks.
+
+- **Backend:** manual smoke checks.
+  - Model default: a dependency-free Node one-liner asserts a new `User` has
+    `onboardingComplete === false`.
+  - Endpoint + serialization: documented `curl` calls (against the local dev
+    server with an authenticated cookie) with expected JSON output.
+- **Frontend:** `OnboardingWizard` is a **pure presentational component**
+  (no network, no router — takes `onFinish` / `onSkip` callbacks), tested with a
+  `.stories.tsx` `play` function matching the existing `*.stories.tsx`
+  convention:
+  - step navigation reaches the last step and calls `onFinish` with the goal
+    values;
+  - "Skip for now" calls `onSkip`.
+  - The network/router wiring lives in a thin `/onboarding` page container and
+    the dashboard redirect gate, both verified manually.
 
 ## Alternatives considered
 
