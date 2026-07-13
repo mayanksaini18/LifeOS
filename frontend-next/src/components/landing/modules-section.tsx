@@ -1,12 +1,11 @@
-import { ArrowUpRight } from "lucide-react";
 import { Section, SectionHeading } from "@/components/landing/section";
 import { Reveal } from "@/components/landing/reveal";
 import { cn } from "@/lib/utils";
 
 /**
  * ModulesSection — the six wellness modules as illustrated cards: an accent
- * badge, a short title, the blurb, and a footer link, with a module
- * illustration bleeding off the right edge.
+ * badge, a short title, and the blurb, with a module illustration bleeding off
+ * the right edge.
  *
  * The /public illustrations are unDraw scenes with baked-in color, so they are
  * normalised to the monochrome brand with a CSS filter: `grayscale` on light,
@@ -18,7 +17,6 @@ interface ModuleCard {
   badge: string;
   title: string;
   blurb: string;
-  footer: string;
   illo: string;
   badgeBg: string;
   badgeText: string;
@@ -30,7 +28,6 @@ const MODULE_CARDS: ModuleCard[] = [
     badge: "Mood",
     title: "Know how you feel",
     blurb: "Notice how you feel and spot what quietly lifts you.",
-    footer: "Daily check-in",
     illo: "/mood.svg",
     badgeBg: "bg-violet-500/10",
     badgeText: "text-violet-600 dark:text-violet-400",
@@ -40,7 +37,6 @@ const MODULE_CARDS: ModuleCard[] = [
     badge: "Sleep",
     title: "Rest, measured",
     blurb: "Track your rest and wake up to gentle, honest trends.",
-    footer: "Sleep log",
     illo: "/sleep.svg",
     badgeBg: "bg-sky-500/10",
     badgeText: "text-sky-600 dark:text-sky-400",
@@ -50,7 +46,6 @@ const MODULE_CARDS: ModuleCard[] = [
     badge: "Water",
     title: "Stay hydrated",
     blurb: "Stay hydrated with a single tap — one glass at a time.",
-    footer: "8 glasses",
     illo: "/water.svg",
     badgeBg: "bg-cyan-500/10",
     badgeText: "text-cyan-600 dark:text-cyan-400",
@@ -60,7 +55,6 @@ const MODULE_CARDS: ModuleCard[] = [
     badge: "Habits",
     title: "Build better habits",
     blurb: "Build small routines that quietly add up over time.",
-    footer: "Streaks",
     illo: "/healthy-habit.svg",
     badgeBg: "bg-emerald-500/10",
     badgeText: "text-emerald-600 dark:text-emerald-400",
@@ -70,7 +64,6 @@ const MODULE_CARDS: ModuleCard[] = [
     badge: "Fitness",
     title: "Move every day",
     blurb: "Log movement and celebrate every active day.",
-    footer: "Workouts",
     illo: "/fitness.svg",
     badgeBg: "bg-orange-500/10",
     badgeText: "text-orange-600 dark:text-orange-400",
@@ -80,7 +73,6 @@ const MODULE_CARDS: ModuleCard[] = [
     badge: "Insights",
     title: "See the patterns",
     blurb: "See the patterns your week has been hiding from you.",
-    footer: "Weekly report",
     illo: "/dashboard.svg",
     badgeBg: "bg-indigo-500/10",
     badgeText: "text-indigo-600 dark:text-indigo-400",
@@ -118,14 +110,6 @@ export function ModulesSection() {
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   {card.blurb}
                 </p>
-
-                <div className="mt-auto flex items-center gap-2 pt-6">
-                  <span className="h-px w-6 bg-border" />
-                  <span className="font-mono text-sm text-foreground/80">
-                    {card.footer}
-                  </span>
-                  <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                </div>
               </div>
 
               {/* Illustration — bleeds off the bottom-right edge */}
