@@ -42,9 +42,9 @@ export function LandingFooter() {
   return (
     <footer className="border-t border-border">
       <div className="mx-auto w-full max-w-6xl px-6 md:px-16 py-12 md:py-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           {/* Brand */}
-          <div className="col-span-2">
+          <div className="md:max-w-xs">
             <div className="flex items-center gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/lifeos-logo.svg" alt="" className="h-7 w-auto" />
@@ -58,24 +58,26 @@ export function LandingFooter() {
             </p>
           </div>
 
-          {/* Link columns */}
-          {FOOTER_COLUMNS.map((column) => (
-            <div key={column.heading}>
-              <p className="text-sm font-medium">{column.heading}</p>
-              <ul className="mt-3 space-y-2">
-                {column.links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Link columns — always parallel (Product · Account · Legal) */}
+          <div className="grid grid-cols-3 gap-8 sm:gap-12 md:gap-16">
+            {FOOTER_COLUMNS.map((column) => (
+              <div key={column.heading}>
+                <p className="text-sm font-medium">{column.heading}</p>
+                <ul className="mt-3 space-y-2">
+                  {column.links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Bottom bar */}

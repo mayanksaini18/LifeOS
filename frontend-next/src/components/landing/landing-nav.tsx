@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { NAV_LINKS } from "@/lib/landing-data";
 import { cn } from "@/lib/utils";
 
@@ -53,7 +54,8 @@ export function LandingNav() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <ThemeToggle />
           <Button
             render={<Link href="/login" />}
             nativeButton={false}
