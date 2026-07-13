@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { OnboardingWizard, type GoalValues } from "@/components/onboarding/onboarding-wizard";
 import { fetchApi, ApiError } from "@/lib/api";
@@ -12,6 +12,10 @@ export default function OnboardingPage() {
   const setUser = useAuthStore((s) => s.setUser);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user?.onboardingComplete) router.replace("/");
+  }, [user, router]);
 
   function markLocalComplete(goals?: GoalValues) {
     if (!user) return;

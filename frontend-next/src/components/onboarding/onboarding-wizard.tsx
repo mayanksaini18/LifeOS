@@ -20,7 +20,7 @@ interface StepDef {
 
 const STEPS: StepDef[] = [
   { key: "sleep",    title: "Sleep",    prompt: "How many hours per night are you aiming for?", unit: "hours",     min: 1, max: 24 },
-  { key: "water",    title: "Water",    prompt: "How many glasses a day is your goal?",         unit: "glasses",   min: 1, max: 50 },
+  { key: "water",    title: "Water",    prompt: "How many glasses a day are you aiming for?",   unit: "glasses",   min: 1, max: 50 },
   { key: "exercise", title: "Exercise", prompt: "How many days a week do you want to move?",   unit: "days / wk", min: 0, max: 7  },
 ];
 

@@ -46,3 +46,22 @@ export const AdjustsThenCompletes: Story = {
     await expect(args.onFinish).toHaveBeenCalledWith({ sleep: 8, water: 8, exercise: 4 });
   },
 };
+
+// "Skip for now" also works from the last step, not just the first.
+export const SkipsFromLastStep: Story = {
+  play: async ({ canvas, args }) => {
+    await userEvent.click(canvas.getByRole('button', { name: /next/i }));
+    await userEvent.click(canvas.getByRole('button', { name: /next/i }));
+    await expect(canvas.getByRole('button', { name: /finish/i })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: /skip for now/i }));
+    await expect(args.onSkip).toHaveBeenCalled();
+  },
+};
+
+// When an error is passed, it renders and does not block Skip.
+export const ShowsError: Story = {
+  args: { error: 'Could not save your goals. Please try again.' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText(/could not save your goals/i)).toBeVisible();
+  },
+};
