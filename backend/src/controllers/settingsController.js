@@ -28,6 +28,17 @@ exports.updateGoals = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+exports.completeOnboarding = async (req, res, next) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: { onboardingComplete: true } },
+      { new: true }
+    );
+    res.json({ onboardingComplete: user.onboardingComplete });
+  } catch (err) { next(err); }
+};
+
 exports.updateReminders = async (req, res, next) => {
   try {
     const { mood, sleep, water, exercise } = req.body;

@@ -44,6 +44,7 @@ function setCookieAndRespond(res, user, accessToken, refreshToken) {
       goals: user.goals ?? { sleep: 7, exercise: 4, mood: 3, water: 8 },
       reminderTimes: user.reminderTimes ?? { mood: '', sleep: '', water: '', exercise: '' },
       emailReminders: user.emailReminders ?? false,
+      onboardingComplete: user.onboardingComplete ?? false,
     }
   });
 }
@@ -265,5 +266,6 @@ exports.getMe = async (req, res) => {
     goals: req.user.goals ?? { sleep: 7, exercise: 4, mood: 3, water: 8 },
     reminderTimes: req.user.reminderTimes ?? { mood: '', sleep: '', water: '', exercise: '' },
     emailReminders: req.user.emailReminders ?? false,
+    onboardingComplete: req.user.onboardingComplete ?? false,
   });
 };
