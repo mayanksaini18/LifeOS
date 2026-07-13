@@ -1,24 +1,91 @@
+import { ArrowUpRight } from "lucide-react";
 import { Section, SectionHeading } from "@/components/landing/section";
 import { Reveal } from "@/components/landing/reveal";
-import { LANDING_MODULES } from "@/lib/landing-data";
+import { cn } from "@/lib/utils";
 
 /**
- * ModulesSection — the six wellness modules. The layout is theme-aware:
+ * ModulesSection — the six wellness modules as illustrated cards: an accent
+ * badge, a short title, the blurb, and a footer link, with a module
+ * illustration bleeding off the right edge.
  *
- *  - Light theme keeps the card grid (each card closes with a tiny meter that
- *    echoes the dashboard's GoalBar).
- *  - Dark theme swaps to a calmer editorial index list — two typographic
- *    columns with hairline dividers and no cards.
- *
- * Both layouts are rendered and toggled purely with CSS `dark:` variants, so
- * there is no theme-guessing on the server and no hydration mismatch.
+ * The /public illustrations are unDraw scenes with baked-in color, so they are
+ * normalised to the monochrome brand with a CSS filter: `grayscale` on light,
+ * `grayscale + invert` on dark (via `dark:invert`), which flips the dark
+ * figures into light ones that read on a dark card.
  */
+interface ModuleCard {
+  key: string;
+  badge: string;
+  title: string;
+  blurb: string;
+  footer: string;
+  illo: string;
+  badgeBg: string;
+  badgeText: string;
+}
 
-// Pleasant, deterministic meter widths — indexed by module position.
-const METER_WIDTHS = ["72%", "64%", "80%", "58%", "68%", "85%"];
-
-// Split the modules into two balanced columns for the dark editorial list.
-const LIST_COLUMNS = [LANDING_MODULES.slice(0, 3), LANDING_MODULES.slice(3, 6)];
+const MODULE_CARDS: ModuleCard[] = [
+  {
+    key: "mood",
+    badge: "Mood",
+    title: "Know how you feel",
+    blurb: "Notice how you feel and spot what quietly lifts you.",
+    footer: "Daily check-in",
+    illo: "/mood.svg",
+    badgeBg: "bg-violet-500/10",
+    badgeText: "text-violet-600 dark:text-violet-400",
+  },
+  {
+    key: "sleep",
+    badge: "Sleep",
+    title: "Rest, measured",
+    blurb: "Track your rest and wake up to gentle, honest trends.",
+    footer: "Sleep log",
+    illo: "/sleep.svg",
+    badgeBg: "bg-sky-500/10",
+    badgeText: "text-sky-600 dark:text-sky-400",
+  },
+  {
+    key: "water",
+    badge: "Water",
+    title: "Stay hydrated",
+    blurb: "Stay hydrated with a single tap — one glass at a time.",
+    footer: "8 glasses",
+    illo: "/water.svg",
+    badgeBg: "bg-cyan-500/10",
+    badgeText: "text-cyan-600 dark:text-cyan-400",
+  },
+  {
+    key: "habits",
+    badge: "Habits",
+    title: "Build better habits",
+    blurb: "Build small routines that quietly add up over time.",
+    footer: "Streaks",
+    illo: "/healthy-habit.svg",
+    badgeBg: "bg-emerald-500/10",
+    badgeText: "text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    key: "fitness",
+    badge: "Fitness",
+    title: "Move every day",
+    blurb: "Log movement and celebrate every active day.",
+    footer: "Workouts",
+    illo: "/fitness.svg",
+    badgeBg: "bg-orange-500/10",
+    badgeText: "text-orange-600 dark:text-orange-400",
+  },
+  {
+    key: "insights",
+    badge: "Insights",
+    title: "See the patterns",
+    blurb: "See the patterns your week has been hiding from you.",
+    footer: "Weekly report",
+    illo: "/dashboard.svg",
+    badgeBg: "bg-indigo-500/10",
+    badgeText: "text-indigo-600 dark:text-indigo-400",
+  },
+];
 
 export function ModulesSection() {
   return (
@@ -29,71 +96,50 @@ export function ModulesSection() {
         subtitle="Mood, sleep, water, habits, fitness, and insights — gently connected, never overwhelming."
       />
 
-      {/* Light theme — card grid */}
-      <div className="mt-14 grid grid-cols-1 gap-4 items-stretch sm:grid-cols-2 lg:grid-cols-3 md:mt-16 dark:hidden">
-        {LANDING_MODULES.map((mod, index) => (
-          <Reveal key={mod.key} delay={index * 60}>
-            <div className="group h-full rounded-2xl border bg-card p-6 transition-colors hover:bg-muted/50">
-              <div
-                className={
-                  "flex h-11 w-11 items-center justify-center rounded-xl border " +
-                  mod.iconBg +
-                  " " +
-                  mod.ring
-                }
-              >
-                <mod.icon className={"h-5 w-5 " + mod.iconColor} />
+      <div className="mt-14 grid grid-cols-1 gap-5 md:mt-16 md:grid-cols-2 lg:grid-cols-3">
+        {MODULE_CARDS.map((card, index) => (
+          <Reveal key={card.key} delay={index * 70}>
+            <div className="group relative flex h-full min-h-70 overflow-hidden rounded-2xl border bg-card p-6 transition-colors hover:bg-muted/40">
+              {/* Text column */}
+              <div className="relative z-10 flex w-[56%] flex-col">
+                <span
+                  className={cn(
+                    "inline-flex w-fit items-center rounded-full px-2.5 py-1 text-xs font-medium",
+                    card.badgeBg,
+                    card.badgeText
+                  )}
+                >
+                  {card.badge}
+                </span>
+
+                <h3 className="mt-4 text-xl font-semibold leading-snug tracking-tight">
+                  {card.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {card.blurb}
+                </p>
+
+                <div className="mt-auto flex items-center gap-2 pt-6">
+                  <span className="h-px w-6 bg-border" />
+                  <span className="font-mono text-sm text-foreground/80">
+                    {card.footer}
+                  </span>
+                  <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </div>
               </div>
 
-              <h3 className="mt-5 font-semibold tracking-tight">{mod.label}</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                {mod.blurb}
-              </p>
-
-              <div className="mt-5 h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                <div
-                  className={"h-full rounded-full " + mod.bar}
-                  style={{ width: METER_WIDTHS[index] ?? "70%" }}
+              {/* Illustration — bleeds off the bottom-right edge */}
+              <div className="pointer-events-none absolute bottom-0 right-0 top-8 flex w-[52%] items-end justify-end">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={card.illo}
+                  alt=""
+                  draggable={false}
+                  className="h-full w-full select-none object-contain object-bottom-right opacity-90 grayscale dark:invert"
                 />
               </div>
             </div>
           </Reveal>
-        ))}
-      </div>
-
-      {/* Dark theme — editorial index list */}
-      <div className="mt-14 hidden grid-cols-1 gap-x-16 md:mt-16 lg:grid-cols-2 dark:grid">
-        {LIST_COLUMNS.map((column, ci) => (
-          <div key={ci} className="flex flex-col">
-            {column.map((mod, ri) => (
-              <Reveal
-                key={mod.key}
-                delay={(ci * 3 + ri) * 60}
-                className="border-b border-border/60 last:border-b-0"
-              >
-                <div className="group flex items-start gap-4 py-6">
-                  <div
-                    className={
-                      "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border " +
-                      mod.iconBg +
-                      " " +
-                      mod.ring
-                    }
-                  >
-                    <mod.icon className={"h-4 w-4 " + mod.iconColor} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-base font-medium tracking-tight">
-                      {mod.label}
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                      {mod.blurb}
-                    </p>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
         ))}
       </div>
     </Section>
