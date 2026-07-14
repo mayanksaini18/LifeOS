@@ -28,6 +28,7 @@ export function useLogWater() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["water"] });
+      queryClient.invalidateQueries({ queryKey: ["challenges"] });
     },
   });
 }

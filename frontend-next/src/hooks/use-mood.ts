@@ -28,6 +28,7 @@ export function useLogMood() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["moods"] });
+      queryClient.invalidateQueries({ queryKey: ["challenges"] });
     },
   });
 }

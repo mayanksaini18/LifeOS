@@ -51,13 +51,17 @@ export async function streamChatMessage(
     for (const evt of events) {
       const line = evt.split("\n").find((l) => l.startsWith("data: "));
       if (!line) continue;
+      let payload: { type?: string; text?: string; message?: string };
       try {
-        const payload = JSON.parse(line.slice(6));
-        if (payload.type === "delta") onDelta(payload.text);
-        else if (payload.type === "error") throw new Error(payload.message || "Stream error");
+        payload = JSON.parse(line.slice(6));
       } catch {
-        // malformed event — skip
+        continue; // malformed event — skip
       }
+      // Handle the parsed payload OUTSIDE the parse try/catch, so a backend
+      // {type:"error"} event actually surfaces to the caller instead of being
+      // swallowed as if it were a malformed line (which froze the chat bubble).
+      if (payload.type === "delta") onDelta(payload.text ?? "");
+      else if (payload.type === "error") throw new Error(payload.message || "Stream error");
     }
   }
 }

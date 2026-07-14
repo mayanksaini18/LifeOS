@@ -28,6 +28,7 @@ export function useLogExercise() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["fitness"] });
+      queryClient.invalidateQueries({ queryKey: ["challenges"] });
     },
   });
 }
