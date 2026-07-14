@@ -12,7 +12,11 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const request = require('supertest');
-const { MongoMemoryServer } = require('mongodb-memory-server');
+// Use the -core variant: identical API, but NO install-time binary download
+// (no postinstall), so `npm install` on the deploy host stays fast and can't
+// fail on a blocked MongoDB CDN. The binary is fetched lazily only when a test
+// actually starts the server below.
+const { MongoMemoryServer } = require('mongodb-memory-server-core');
 
 const app = require('../src/app');
 const User = require('../src/models/User');
