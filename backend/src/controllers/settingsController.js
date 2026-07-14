@@ -55,18 +55,34 @@ exports.updateReminders = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+const MAX_PUSH_SUBSCRIPTIONS = 20;
+
 exports.subscribePush = async (req, res, next) => {
   try {
-    const subscription = req.body;
-    if (!subscription?.endpoint) {
+    const body = req.body || {};
+    // Validate shape and store only the known web-push fields — never the raw
+    // request body — so an attacker can't stuff arbitrary/oversized data into
+    // the user document (which is capped at 16MB).
+    if (typeof body.endpoint !== 'string' || !/^https:\/\//.test(body.endpoint) || body.endpoint.length > 2048) {
       return res.status(400).json({ message: 'Invalid push subscription' });
     }
+    const keys = body.keys && typeof body.keys === 'object' ? body.keys : {};
+    const subscription = {
+      endpoint: body.endpoint,
+      expirationTime: typeof body.expirationTime === 'number' ? body.expirationTime : null,
+      keys: {
+        p256dh: typeof keys.p256dh === 'string' ? keys.p256dh.slice(0, 256) : undefined,
+        auth: typeof keys.auth === 'string' ? keys.auth.slice(0, 256) : undefined,
+      },
+    };
 
+    // Remove any existing entry for this endpoint, then re-add — and cap the
+    // array so a client churning endpoints can't grow it without bound.
     await User.findByIdAndUpdate(req.user._id, {
       $pull: { pushSubscriptions: { endpoint: subscription.endpoint } }
     });
     await User.findByIdAndUpdate(req.user._id, {
-      $push: { pushSubscriptions: subscription }
+      $push: { pushSubscriptions: { $each: [subscription], $slice: -MAX_PUSH_SUBSCRIPTIONS } }
     });
 
     res.json({ message: 'Subscribed to push notifications' });

@@ -1,79 +1,40 @@
 require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const admin = require('firebase-admin');
+const app = require('./app');
 const connectDB = require('./config/db');
-const authRoutes = require('./routes/auth');
-const habitRoutes = require('./routes/habits');
-const moodRoutes = require('./routes/mood');
-const sleepRoutes = require('./routes/sleep');
-const waterRoutes = require('./routes/water');
-const fitnessRoutes = require('./routes/fitness');
-const insightRoutes = require('./routes/insights');
-const settingsRoutes = require('./routes/settings');
-const journalRoutes = require('./routes/journal');
-const chatRoutes = require('./routes/chat');
-const challengeRoutes = require('./routes/challenges');
-const exportRoutes = require('./routes/export');
-const errorHandler = require('./middlewares/errorHandler');
 const { startScheduler } = require('./scheduler');
 
-// Initialize Firebase Admin. verifyIdToken() only needs the project ID: it
-// verifies each ID token's signature against Google's public certs and checks
-// the `aud`/`iss` claims against this project. It MUST match the Firebase
-// project the frontend mints tokens for (currently `lifeos-f9dc4`) — if it
-// doesn't, every Google and phone sign-in is rejected with a generic 401.
-// Set FIREBASE_PROJECT_ID on the server to override the fallback.
-const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'lifeos-f9dc4';
-if (!process.env.FIREBASE_PROJECT_ID) {
-  console.warn(
-    '[firebase-admin] FIREBASE_PROJECT_ID is not set — defaulting to ' +
-      `"${FIREBASE_PROJECT_ID}". Set it explicitly to the frontend Firebase project.`
-  );
-}
-if (!admin.apps.length) {
-  admin.initializeApp({ projectId: FIREBASE_PROJECT_ID });
-}
+const PORT = process.env.PORT || 5000;
 
-const app = express();
-connectDB();
-
-app.use(express.json({ limit: '10kb' }));
-app.use(cookieParser());
-
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'https://www.smarthabittracker.online',
-  'https://lifeos-eight-xi.vercel.app',
-];
-
-app.use(cors({
-  origin: allowedOrigins,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true
-}));
-
-app.get('/', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Server is healthy and running.' });
+// Crash safety: on a shared/free-tier dyno a single unhandled rejection or a
+// thrown error deep in an async handler would otherwise take the whole process
+// down for every connected user. Log and (for uncaught exceptions) exit so the
+// platform can restart cleanly, rather than continuing in an unknown state.
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err);
+  process.exit(1);
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/habits', habitRoutes);
-app.use('/api/mood', moodRoutes);
-app.use('/api/sleep', sleepRoutes);
-app.use('/api/water', waterRoutes);
-app.use('/api/fitness', fitnessRoutes);
-app.use('/api/insights', insightRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/journal', journalRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/challenges', challengeRoutes);
-app.use('/api/export', exportRoutes);
+// Connect to Mongo BEFORE listening so we never advertise readiness while the
+// DB is still connecting (which would queue requests) and never crash-after-listen.
+connectDB()
+  .then(() => {
+    const server = app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+    startScheduler();
 
-app.use(errorHandler);
-startScheduler();
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+    // Graceful shutdown: stop accepting new connections and let in-flight
+    // requests drain before the platform kills the process on redeploy.
+    const shutdown = (signal) => {
+      console.log(`[${signal}] shutting down…`);
+      server.close(() => process.exit(0));
+      setTimeout(() => process.exit(0), 10000).unref();
+    };
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+  })
+  .catch((err) => {
+    console.error('Startup failed — could not connect to MongoDB:', err.message);
+    process.exit(1);
+  });

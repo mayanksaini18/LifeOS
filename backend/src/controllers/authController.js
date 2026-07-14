@@ -249,10 +249,24 @@ exports.refreshToken = async (req, res, next) => {
   }
 };
 
-exports.logout = async (req, res) => {
-  res.clearCookie('jid', { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax' });
-  res.clearCookie('access_token', { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax' });
-  res.json({ message: 'Logged out' });
+exports.logout = async (req, res, next) => {
+  try {
+    // Revoke the stored refresh token so it can't be replayed after logout.
+    // The cookie is cleared below, but the token stays valid server-side (its
+    // full 7-day life) unless we also clear it in the DB.
+    const token = req.cookies?.jid || req.body?.refreshToken;
+    if (token) {
+      try {
+        const payload = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+        await User.updateOne({ _id: payload.id, refreshToken: token }, { $unset: { refreshToken: '' } });
+      } catch {
+        // expired/invalid token — nothing to revoke
+      }
+    }
+    res.clearCookie('jid', { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax' });
+    res.clearCookie('access_token', { httpOnly: true, secure: isProd, sameSite: isProd ? 'none' : 'lax' });
+    res.json({ message: 'Logged out' });
+  } catch (err) { next(err); }
 };
 
 exports.getMe = async (req, res) => {

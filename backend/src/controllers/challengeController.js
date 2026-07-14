@@ -92,15 +92,21 @@ exports.getChallenges = async (req, res, next) => {
     for (const c of challenges) {
       if (c.completed) continue;
       const progress = await computeProgress(req.user._id, c, weekStart, weekEnd);
-      if (progress !== c.progress) {
-        const update = { progress };
-        if (progress >= c.target) {
-          update.completed = true;
-          update.completedAt = new Date();
+      if (progress >= c.target) {
+        // Claim completion atomically. Only the request that actually flips
+        // completed:false -> true awards XP, so two concurrent GETs (two tabs,
+        // refetch-on-focus, a retry) can't double-credit the reward.
+        const claim = await Challenge.updateOne(
+          { _id: c._id, completed: false },
+          { $set: { progress, completed: true, completedAt: new Date() } }
+        );
+        if (claim.modifiedCount === 1) {
           await User.findByIdAndUpdate(req.user._id, { $inc: { xp: c.xpReward } });
         }
-        await Challenge.updateOne({ _id: c._id }, { $set: update });
-        Object.assign(c, update);
+        Object.assign(c, { progress, completed: true, completedAt: new Date() });
+      } else if (progress !== c.progress) {
+        await Challenge.updateOne({ _id: c._id }, { $set: { progress } });
+        Object.assign(c, { progress });
       }
     }
 
