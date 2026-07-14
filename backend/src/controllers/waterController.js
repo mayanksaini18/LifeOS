@@ -8,10 +8,19 @@ exports.logWater = async (req, res, next) => {
   try {
     const { glasses, goal } = req.body;
     const today = getUTCStartOfDay(new Date());
+    const userGoal = req.user.goals?.water ?? 8;
+
+    // Seed a new day's goal from the user's profile goal (set at onboarding),
+    // not a hardcoded 8. An explicit goal in the body still wins. ($set and
+    // $setOnInsert must be kept out of the same path — and never mix an update
+    // operator with a bare field, which Mongo rejects.)
+    const update = { $inc: { glasses: glasses || 1 } };
+    if (goal != null) update.$set = { goal };
+    else update.$setOnInsert = { goal: userGoal };
 
     const water = await Water.findOneAndUpdate(
       { user: req.user._id, date: today },
-      { $inc: { glasses: glasses || 1 }, ...(goal ? { goal } : {}) },
+      update,
       { upsert: true, new: true, runValidators: true }
     );
     res.status(201).json(water);
@@ -21,8 +30,9 @@ exports.logWater = async (req, res, next) => {
 exports.getWaterToday = async (req, res, next) => {
   try {
     const today = getUTCStartOfDay(new Date());
+    const userGoal = req.user.goals?.water ?? 8;
     const water = await Water.findOne({ user: req.user._id, date: today });
-    res.json(water || { glasses: 0, goal: 8, date: today });
+    res.json(water || { glasses: 0, goal: userGoal, date: today });
   } catch (err) { next(err); }
 };
 

@@ -73,6 +73,7 @@ export function MoodHistory() {
           <Button
             variant="ghost"
             size="icon-sm"
+            disabled={deleteMood.isPending}
             onClick={async () => {
               try {
                 await deleteMood.mutateAsync(mood._id);

@@ -29,6 +29,7 @@ export function useSaveJournal() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["journal"] });
+      queryClient.invalidateQueries({ queryKey: ["challenges"] });
     },
   });
 }

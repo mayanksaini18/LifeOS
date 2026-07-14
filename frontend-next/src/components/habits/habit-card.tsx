@@ -28,9 +28,10 @@ import type { Habit } from "@/types/habit";
 interface HabitCardProps {
   habit: Habit;
   onCheckin: () => void;
+  pending?: boolean;
 }
 
-export function HabitCard({ habit, onCheckin }: HabitCardProps) {
+export function HabitCard({ habit, onCheckin, pending = false }: HabitCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [title, setTitle] = useState(habit.title);
@@ -128,8 +129,8 @@ export function HabitCard({ habit, onCheckin }: HabitCardProps) {
             {/* Check circle */}
             <button
               type="button"
-              onClick={hasCheckedToday ? undefined : onCheckin}
-              disabled={hasCheckedToday}
+              onClick={hasCheckedToday || pending ? undefined : onCheckin}
+              disabled={hasCheckedToday || pending}
               className={`h-8 w-8 rounded-full border-2 flex items-center justify-center transition-colors ${
                 hasCheckedToday
                   ? "bg-foreground border-foreground text-background"

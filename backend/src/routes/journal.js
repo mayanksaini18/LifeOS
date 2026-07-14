@@ -3,12 +3,16 @@ const router = express.Router();
 const { body, param } = require('express-validator');
 const auth = require('../middlewares/auth');
 const validate = require('../middlewares/validate');
+const { aiLimiter } = require('../middlewares/aiLimiter');
 const { saveEntry, getEntries, getEntryByDate, deleteEntry, analyzeEntry } = require('../controllers/journalController');
 
 router.use(auth);
 
 router.post('/',
-  [body('content').trim().notEmpty().isLength({ max: 5000 })],
+  [
+    body('content').trim().notEmpty().isLength({ max: 5000 }),
+    body('date').optional().isISO8601().withMessage('Date must be ISO-8601'),
+  ],
   validate,
   saveEntry
 );
@@ -22,6 +26,7 @@ router.get('/:date',
 );
 
 router.post('/:id/analyze',
+  aiLimiter,
   [param('id').isMongoId()],
   validate,
   analyzeEntry

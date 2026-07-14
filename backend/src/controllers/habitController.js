@@ -73,10 +73,30 @@ function resetFreezeIfDue(habit) {
 
 exports.checkIn = async (req, res, next) => {
   try {
-    const habit = await Habit.findOne({ _id: req.params.id, user: req.user._id });
-    if (!habit) return res.status(404).json({ message: 'Habit not found' });
-
     const now = new Date();
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+    // Atomically claim today's check-in slot. The filter `lastCheckinDate != today`
+    // matches at most once; the winning request gets the pre-update document
+    // (new:false) to compute the streak from, and every concurrent duplicate
+    // fails the filter — so XP is awarded exactly once per day, not per race.
+    const habit = await Habit.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id, lastCheckinDate: { $ne: today } },
+      { $set: { lastCheckinDate: today } },
+      { new: false }
+    );
+
+    if (!habit) {
+      // Either the habit doesn't exist, or it was already checked in today.
+      const exists = await Habit.exists({ _id: req.params.id, user: req.user._id });
+      return res.status(exists ? 400 : 404).json({
+        message: exists ? 'Already checked in today' : 'Habit not found',
+      });
+    }
+
+    // Legacy-data guard: a habit created before lastCheckinDate existed could
+    // have today's check-in already in the array. The claim set lastCheckinDate
+    // (harmless), but don't double-add or double-award.
     if (habit.checkins.some(c => isSameUTCDay(new Date(c.date), now))) {
       return res.status(400).json({ message: 'Already checked in today' });
     }
@@ -91,7 +111,6 @@ exports.checkIn = async (req, res, next) => {
     let freezeUsed = false;
     if (lastCheckin) {
       const lastDay = new Date(Date.UTC(lastCheckin.getUTCFullYear(), lastCheckin.getUTCMonth(), lastCheckin.getUTCDate()));
-      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
       const diffDays = Math.round((today - lastDay) / (1000 * 60 * 60 * 24));
       if (diffDays === 1) {
         newStreak = habit.streak + 1;
@@ -105,14 +124,21 @@ exports.checkIn = async (req, res, next) => {
     habit.streak = newStreak;
     habit.bestStreak = Math.max(habit.bestStreak, habit.streak);
     habit.checkins.push({ date: now, xpEarned: XP_PER_CHECKIN });
+    habit.lastCheckinDate = today;
     await habit.save();
 
-    const user = await User.findById(req.user._id);
-    user.xp += XP_PER_CHECKIN;
-    user.level = Math.floor(user.xp / XP_PER_LEVEL) + 1;
-    await user.save();
+    // Atomic XP increment (returns the updated doc); recompute level from it.
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $inc: { xp: XP_PER_CHECKIN } },
+      { new: true }
+    );
+    const level = Math.floor(user.xp / XP_PER_LEVEL) + 1;
+    if (level !== user.level) {
+      await User.updateOne({ _id: req.user._id }, { $set: { level } });
+    }
 
-    res.json({ habit, user: { xp: user.xp, level: user.level }, freezeUsed });
+    res.json({ habit, user: { xp: user.xp, level }, freezeUsed });
   } catch (err) { next(err); }
 };
 

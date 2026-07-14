@@ -19,7 +19,11 @@ async function collect(userId) {
 
 function csvEscape(v) {
   if (v == null) return '';
-  const s = String(v);
+  let s = String(v);
+  // Neutralize spreadsheet formula injection: a cell beginning with = + - @
+  // (or a leading tab/CR) is executed as a formula by Excel/Sheets. Prefix a
+  // single quote so it's treated as literal text.
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
   return s;
 }

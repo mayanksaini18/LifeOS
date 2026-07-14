@@ -13,6 +13,9 @@ const habitSchema = new mongoose.Schema({
   category: { type: String, enum: ['fitness', 'health', 'learning', 'mindfulness', 'productivity', 'other'], default: 'other' },
   createdAt: { type: Date, default: Date.now },
   checkins: [checkinSchema],
+  // UTC day-start of the most recent check-in. Used as an atomic guard so two
+  // concurrent check-ins on the same day can't both award XP (see checkIn).
+  lastCheckinDate: { type: Date },
   streak: { type: Number, default: 0 },
   bestStreak: { type: Number, default: 0 },
   isActive: { type: Boolean, default: true },

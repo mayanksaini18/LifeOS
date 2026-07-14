@@ -35,6 +35,7 @@ export function useLogSleep() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sleep"] });
+      queryClient.invalidateQueries({ queryKey: ["challenges"] });
     },
   });
 }

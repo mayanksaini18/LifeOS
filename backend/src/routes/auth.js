@@ -37,7 +37,7 @@ const resendValidation = [
 
 router.post('/register', authLimiter, registerValidation, validate, register);
 router.post('/login', authLimiter, loginValidation, validate, login);
-router.post('/refresh', refreshToken);
+router.post('/refresh', authLimiter, refreshToken);
 router.post('/google', authLimiter, googleLogin);
 router.post('/phone', authLimiter, phoneLogin);
 router.post('/logout', logout);

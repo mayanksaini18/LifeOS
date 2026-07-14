@@ -29,6 +29,7 @@ export function useCheckin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["habits"] });
       queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["challenges"] });
     },
   });
 }
@@ -93,6 +94,7 @@ export function useCheckinWithFreeze() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["habits"] });
       queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["challenges"] });
     },
   });
 }

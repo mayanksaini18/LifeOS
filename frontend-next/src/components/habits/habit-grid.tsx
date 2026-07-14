@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useHabits, useCheckinWithFreeze } from "@/hooks/use-habits";
 import { useAuthStore } from "@/stores/auth-store";
 import { HabitCard } from "./habit-card";
@@ -13,10 +14,13 @@ export function HabitGrid() {
   const { data, isLoading } = useHabits();
   const checkin = useCheckinWithFreeze();
   const updateUserStats = useAuthStore((s) => s.updateUserStats);
+  const [pendingId, setPendingId] = useState<string | null>(null);
 
   const habits = data?.habits ?? [];
 
   async function handleCheckin(habitId: string) {
+    if (pendingId) return; // a check-in is already in flight
+    setPendingId(habitId);
     try {
       const result = await checkin.mutateAsync(habitId);
       if (result.user) {
@@ -29,6 +33,8 @@ export function HabitGrid() {
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Check-in failed");
+    } finally {
+      setPendingId(null);
     }
   }
 
@@ -71,6 +77,7 @@ export function HabitGrid() {
           key={habit._id}
           habit={habit}
           onCheckin={() => handleCheckin(habit._id)}
+          pending={pendingId === habit._id}
         />
       ))}
     </div>

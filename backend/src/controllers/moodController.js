@@ -70,9 +70,13 @@ exports.getMoodTrends = async (req, res, next) => {
 
 exports.updateMood = async (req, res, next) => {
   try {
+    // Whitelist updatable fields. Forwarding raw req.body would let a caller
+    // reassign the entry's `user`/`date` (mass-assignment), moving it to
+    // another account or a different day.
+    const { score, energy, notes, tags } = req.body;
     const mood = await Mood.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
-      req.body,
+      { score, energy, notes, tags },
       { new: true, runValidators: true }
     );
     if (!mood) return res.status(404).json({ message: 'Mood entry not found' });
