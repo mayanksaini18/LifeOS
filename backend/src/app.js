@@ -36,6 +36,11 @@ if (!admin.apps.length) {
 }
 
 const app = express();
+// Trust exactly one proxy hop (Render/Vercel terminate TLS and forward via
+// X-Forwarded-For). Without this, express-rate-limit and req.ip see the proxy's
+// IP for every request and bucket all users together. `1` (not `true`) keeps it
+// from being permissively spoofable.
+app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
 // Baseline security headers. CSP and cross-origin isolation are disabled: this
