@@ -19,17 +19,25 @@ const exportRoutes = require('./routes/export');
 const errorHandler = require('./middlewares/errorHandler');
 const { startScheduler } = require('./scheduler');
 
-// Initialize Firebase Admin (uses default credentials or service account)
+// Initialize Firebase Admin. verifyIdToken() only needs the project ID: it
+// verifies each ID token's signature against Google's public certs and checks
+// the `aud`/`iss` claims against this project. It MUST match the Firebase
+// project the frontend mints tokens for (currently `lifeos-f9dc4`) — if it
+// doesn't, every Google and phone sign-in is rejected with a generic 401.
+// Set FIREBASE_PROJECT_ID on the server to override the fallback.
+const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'lifeos-f9dc4';
+if (!process.env.FIREBASE_PROJECT_ID) {
+  console.warn(
+    '[firebase-admin] FIREBASE_PROJECT_ID is not set — defaulting to ' +
+      `"${FIREBASE_PROJECT_ID}". Set it explicitly to the frontend Firebase project.`
+  );
+}
 if (!admin.apps.length) {
-  admin.initializeApp({
-    projectId: process.env.FIREBASE_PROJECT_ID || 'smart-habit-tracker-39269',
-  });
+  admin.initializeApp({ projectId: FIREBASE_PROJECT_ID });
 }
 
 const app = express();
 connectDB();
-const MONGO_URI = 'mongodb+srv://mayanksaini0416_db_user:%40Mayank0416@cluster0.v0rdlpc.mongodb.net/smart-health-tracker';
-console.log('MONGO_URI:', MONGO_URI);
 
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
