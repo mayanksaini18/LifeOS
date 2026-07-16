@@ -23,6 +23,15 @@
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-module-mood: var(--module-mood);
+  --color-module-sleep: var(--module-sleep);
+  --color-module-water: var(--module-water);
+  --color-module-habits: var(--module-habits);
+  --color-module-fitness: var(--module-fitness);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -48,25 +57,54 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Non-inline: `@theme inline` does NOT emit the custom property, it only
+   inlines the value into generated utilities. The keyframes below reference
+   var(--ease-editorial), so the property must actually exist at :root.
+   `--ease-*` is a real Tailwind v4 namespace, so this also generates an
+   `ease-editorial` utility for one-off transitions. */
+@theme {
+  --ease-editorial: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: #f7f8f6;
+  --foreground: #14171a;
+  --card: #eef0ed;
+  --card-foreground: #14171a;
+  --popover: #f7f8f6;
+  --popover-foreground: #14171a;
+  --primary: #14171a;
+  --primary-foreground: #f7f8f6;
+  --secondary: #eef0ed;
+  --secondary-foreground: #14171a;
+  --muted: #eef0ed;
+  --muted-foreground: #6a7178;
+  --accent: #eef0ed;
+  --accent-foreground: #14171a;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #dce0da;
+  --input: #dce0da;
+  --ring: #6a7178;
+
+  /* Module accents — identity colors for the five trackers. */
+  --module-mood: #8d84b3;
+  --module-sleep: #5f87a6;
+  --module-water: #4f9490;
+  --module-habits: #6d8f5a;
+  --module-fitness: #b8703f;
+
+  /* Status — a SEPARATE family. Never alias these to a module accent, however
+     close the hue. Success is green because green means success; habits is
+     green because it was picked to be. They change for unrelated reasons. */
+  --success: #4a7c59;
+  --success-foreground: #f7f8f6;
+  --warning: #a8762e;
+  --warning-foreground: #f7f8f6;
+
+  /* Motion durations. Plain :root vars rather than @theme — Tailwind v4 has no
+     `--duration-*` theme namespace, so these would generate no utility. */
+  --duration-wipe-in: 1.9s;
+  --duration-wipe-out: 1s;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -84,24 +122,35 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: #14171a;
+  --foreground: #f7f8f6;
+  --card: #1b1f22;
+  --card-foreground: #f7f8f6;
+  --popover: #1b1f22;
+  --popover-foreground: #f7f8f6;
+  --primary: #f7f8f6;
+  --primary-foreground: #14171a;
+  --secondary: #2b3033;
+  --secondary-foreground: #f7f8f6;
+  --muted: #2b3033;
+  --muted-foreground: #9aa1a8;
+  --accent: #2b3033;
+  --accent-foreground: #f7f8f6;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --border: #2b3033;
+  --input: #2b3033;
+  --ring: #6a7178;
+
+  --module-mood: #a79ecc;
+  --module-sleep: #7aa3c2;
+  --module-water: #6bb0ac;
+  --module-habits: #89ab76;
+  --module-fitness: #d18a5c;
+
+  --success: #7aab86;
+  --success-foreground: #14171a;
+  --warning: #d4a054;
+  --warning-foreground: #14171a;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -146,10 +195,59 @@
   to   { opacity: 1; }
 }
 
+/* The editorial wipe. A clip-path reveal + a 40px drift + a weight settle,
+   all on one easing curve. Ends at `clip-path: none` so descenders and
+   overflow aren't clipped once the animation is done. */
+@keyframes mask-in {
+  0%   { clip-path: polygon(0 0, 0 0, 0 200%, 0 200%);          font-weight: 400; translate: 0; }
+  50%  { clip-path: polygon(0 0, 110% 0, 110% 200%, 0 200%);    font-weight: 400; translate: 40px; }
+  99%  { clip-path: polygon(0 0, 110% 0, 110% 200%, 0 200%);    font-weight: 300; translate: 0; }
+  100% { clip-path: none;                                        font-weight: 300; translate: 0; }
+}
+
+/* Hero only. Two stacked copies: the serif wipes in while the sans fades out
+   beneath the moving edge, reading as a sans→serif morph. */
+@keyframes morph-serif-in {
+  0%   { clip-path: polygon(0 0, 0 0, 0 200%, 0 200%);       translate: 0;    opacity: 1; }
+  50%  { clip-path: polygon(0 0, 110% 0, 110% 200%, 0 200%); translate: 40px; opacity: 0; }
+  75%  { opacity: 1; }
+  100% { clip-path: none;                                     translate: 0;    opacity: 1; }
+}
+@keyframes morph-sans-out {
+  0%   { clip-path: polygon(0 0, 0 0, 0 200%, 0 200%);       translate: 0;    opacity: 1; }
+  50%  { clip-path: polygon(0 0, 110% 0, 110% 200%, 0 200%); translate: 40px; opacity: 1; }
+  75%  { opacity: 0; }
+  100% { clip-path: polygon(0 0, 110% 0, 110% 200%, 0 200%); translate: 0;    opacity: 0; }
+}
+
+@keyframes word-out {
+  0%   { clip-path: polygon(0 0, 110% 0, 110% 200%, 0 200%);       translate: 0; }
+  100% { clip-path: polygon(110% 0, 110% 0, 110% 200%, 110% 200%); translate: 40px; }
+}
+
 .animate-float       { animation: float     5s ease-in-out infinite; }
 .animate-float-sm    { animation: float-sm  4s ease-in-out infinite; }
 .animate-fade-in-up  { animation: fade-in-up  0.6s ease-out both; }
 .animate-fade-in     { animation: fade-in     0.5s ease-out both; }
+.animate-mask-in        { animation: mask-in         var(--duration-wipe-in)  var(--ease-editorial) forwards; }
+.animate-morph-serif-in { animation: morph-serif-in  var(--duration-wipe-in)  var(--ease-editorial) forwards; }
+.animate-morph-sans-out { animation: morph-sans-out  var(--duration-wipe-in)  var(--ease-editorial) forwards; }
+.animate-word-in        { animation: mask-in         var(--duration-wipe-in)  var(--ease-editorial) forwards; }
+.animate-word-out       { animation: word-out        var(--duration-wipe-out) var(--ease-editorial) forwards; }
+
+/* Motion is opt-in. Every wipe collapses to "already arrived". */
+@media (prefers-reduced-motion: reduce) {
+  .animate-mask-in,
+  .animate-morph-serif-in,
+  .animate-morph-sans-out,
+  .animate-word-in,
+  .animate-word-out {
+    animation: none;
+    clip-path: none;
+    opacity: 1;
+    translate: 0;
+  }
+}
 
 ::view-transition-old(root),
 ::view-transition-new(root) {
