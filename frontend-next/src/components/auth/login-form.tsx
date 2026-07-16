@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { fetchApi, ApiError } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 import { GoogleLogin } from "@/components/auth/google-login";
+import { VerifiedBanner } from "@/components/auth/verified-banner";
 import type { AuthResponse } from "@/types/user";
 import { ArrowLeft01Icon } from "hugeicons-react";
 
@@ -88,11 +89,7 @@ export function LoginForm() {
         </p>
       </div>
 
-      {verified === "1" && (
-        <div className="rounded-lg border border-success/30 bg-success/8 px-4 py-3">
-          <p className="text-sm text-foreground">Email verified. Sign in to continue.</p>
-        </div>
-      )}
+      {verified === "1" && <VerifiedBanner />}
 
       {verified === "0" && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/8 px-4 py-3">
