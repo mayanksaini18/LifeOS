@@ -14,3 +14,7 @@ node_modules/
 # macOS / iCloud duplication artifacts (e.g. "file 2.ts", "AGENTS 2.md")
 * [0-9].*
 * [0-9]
+
+# Claude Code — personal settings and agent worktrees (never commit these)
+.claude/settings.local.json
+.claude/worktrees/
