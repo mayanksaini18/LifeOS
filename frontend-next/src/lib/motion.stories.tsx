@@ -4,9 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import { whenSomeInView } from './motion';
 
 /**
- * Two elements in one group. Only the second is scrolled into view — both must
- * still fire, because the group enters together. That grouping behavior is the
- * whole point of the helper.
+ * Two elements in one group. `a` is pinned far below the fold
+ * (`position: fixed; top: 150vh`) so it is *never* individually intersecting
+ * — it can only fire via the group. `b` sits in the normal flow and is in
+ * the viewport at mount. If `a` still ends up in `entered`, that's only
+ * explicable by `b`'s enter transition propagating to the whole group —
+ * which is the whole point of the helper. A naive per-element observer
+ * (each element firing its own `onEnter` off its own `isIntersecting`)
+ * would never fire for `a` here, so this fails under a non-grouped
+ * implementation.
  */
 function GroupHarness() {
   const a = useRef<HTMLDivElement>(null);
@@ -24,7 +30,14 @@ function GroupHarness() {
 
   return (
     <div>
-      <div ref={a} data-name="a" data-testid="a">A</div>
+      <div
+        ref={a}
+        data-name="a"
+        data-testid="a"
+        style={{ position: 'fixed', top: '150vh', left: 0 }}
+      >
+        A
+      </div>
       <div ref={b} data-name="b" data-testid="b">B</div>
       <output data-testid="entered">{[...entered].sort().join(',')}</output>
     </div>
