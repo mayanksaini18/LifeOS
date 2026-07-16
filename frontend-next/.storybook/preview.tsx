@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/nextjs-vite'
 import '../src/app/globals.css'
+import { fontVariables } from '../src/lib/fonts'
 import { ThemeProvider } from '../src/components/providers/theme-provider'
 import { QueryProvider } from '../src/components/providers/query-provider'
 
@@ -20,13 +21,17 @@ const preview: Preview = {
     }
   },
   // Real provider tree from src/app/layout.tsx so stories render like the app.
+  // `fontVariables` mirrors the <body> class there — Storybook never renders
+  // the root layout, so without this every story falls back to system fonts.
   decorators: [
     (Story) => (
-      <ThemeProvider>
-        <QueryProvider>
-          <Story />
-        </QueryProvider>
-      </ThemeProvider>
+      <div className={fontVariables}>
+        <ThemeProvider>
+          <QueryProvider>
+            <Story />
+          </QueryProvider>
+        </ThemeProvider>
+      </div>
     ),
   ],
 };
