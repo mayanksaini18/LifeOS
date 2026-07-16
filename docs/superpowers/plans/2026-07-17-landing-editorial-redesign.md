@@ -788,11 +788,30 @@ status family."
 The other family: ~24 literals whose meaning is *state*, not *module identity*.
 
 **Files:**
-- Modify: `src/components/auth/login-form.tsx:92`
-- Modify: `src/components/auth/register-form.tsx:67`
-- Modify: `src/components/auth/verify-client.tsx:61`
-- Modify: `src/components/dashboard/weekly-challenges.tsx:63`
-- Modify: any file still matching the status literal grep in Step 4
+- Modify: `src/components/auth/login-form.tsx:92` — "Email verified" banner
+- Modify: `src/components/auth/register-form.tsx:67` — mail-sent confirmation
+- Modify: `src/components/auth/verify-client.tsx:61` — verified state
+- Modify: `src/components/dashboard/weekly-challenges.tsx:63` — completed check
+- Modify: `src/components/dashboard/weekly-challenges.tsx:75` — completed progress bar (`c.completed ? "bg-emerald-500" : "bg-foreground"`)
+- Modify: `src/components/water/water-tracker.tsx:589` — `bg-green-400` goal-hit state
+
+**Corrected 2026-07-17 after Task 3's audit.** Two errors in the original list:
+
+1. It claimed `weekly-challenges.tsx` carried both a status and a module
+   occurrence. **It has two occurrences and both are status** (`:63` and `:75`,
+   both gated on `c.completed`). `Challenge.module` spans mood|sleep|water|
+   exercise|habits|journal, so a green "done" bar cannot be `module-habits` for
+   a completed *water* challenge. There is no module occurrence in that file.
+2. `water-tracker.tsx:589` uses `bg-green-400`, which **matches neither this
+   task's grep nor Task 3's** — it would have been silently missed.
+
+**Explicitly OUT of scope — leave as literals** (see the spec's "Valence: known
+debt"; these are neither module nor status, and the decision is to defer a
+valence family):
+`insights/page.tsx:10,21` · `journal/page.tsx:209` · `mood-insights.tsx:33` ·
+`gamification-section.tsx:139,155` · `module-widgets.tsx` `MOOD_COLOR` ·
+`mood-history.tsx` `SCORE_BG` · `fitness-stats.tsx` `STAT_ICONS` ·
+`constants.ts` `HABIT_COLORS` · `chart-theme.ts` `ENERGY_CHART_COLORS`
 
 **Interfaces:**
 - Consumes: `text-success`, `bg-success`, `text-warning`, `bg-warning`, `text-destructive` from Task 2.
@@ -886,7 +905,16 @@ Run:
 grep -rnE "(red|rose|amber|yellow|green)-[0-9]{3}" src/
 ```
 
-For each hit, classify by **meaning, not hue**, and apply the mapping table. Where a literal is decorative (e.g. an illustration fill) rather than semantic, leave it and note why in the commit body.
+For each hit, classify by **meaning, not hue**. Migrate only literals meaning a
+true operation/state outcome (verified, sent, completed, error, warning). Where
+a literal is valence, sentiment, trend direction, correlation strength, a mood
+ramp step, or decorative variety, **leave it** — see the out-of-scope list above
+and the spec's "Valence: known debt". Note each retention in the commit body.
+
+The audit that produced the out-of-scope list found the mood ramps
+(`red → orange → yellow → emerald → violet`) contain `red` and `yellow` steps
+that this grep matches. Do not migrate them: two of the five steps have no token
+of any family, so migrating the rest would split one ramp across two systems.
 
 - [ ] **Step 5: Run the test to verify it passes**
 
@@ -896,7 +924,7 @@ Expected: PASS.
 - [ ] **Step 6: Verify the success criterion**
 
 Run: `grep -rnE "(violet|sky|cyan|emerald|orange)-[0-9]{3}" src/`
-Expected: no output. This is the spec's success criterion.
+Expected: **the out-of-scope list above, and nothing else.** (Amended 2026-07-17 — this grep previously expected no output at all. That bar was wrong: ~19 literals legitimately remain because they are neither module nor status. Verify every hit appears in the out-of-scope list; a hit that does NOT appear there is a real miss.)
 
 - [ ] **Step 7: Run the full suite**
 
@@ -2360,9 +2388,11 @@ Expected: PASS.
 grep -nE '"(gsap|framer-motion|motion|lenis|three|lottie-web|@lottiefiles/|@rive-app/)' package.json
 # Expected: no output.
 
-# No color literals.
+# No color literals that carry MODULE IDENTITY. (Amended 2026-07-17: this
+# previously expected zero output, which was wrong — see the spec's
+# "Valence: known debt". Every hit must appear in Task 4's out-of-scope list.)
 grep -rnE "(violet|sky|cyan|emerald|orange)-[0-9]{3}" src/
-# Expected: no output.
+# Expected: only the documented valence/sentiment/decorative retentions.
 
 # Lint clean.
 npm run lint

@@ -303,15 +303,73 @@ constraint is worse than none.
 ## Success criteria
 
 - No animation library in `package.json`.
-- Zero `(violet|sky|cyan|emerald|orange)-[0-9]{3}` literals in `src/` — with
-  each former occurrence resolved to the *semantically correct* family, not
-  merely the nearest hue. Spot-check: the "Email verified" banner must reference
-  `success`, and retuning `--color-module-habits` must leave it untouched.
+- Zero color literals **that carry module identity**. Each former occurrence
+  resolves to the *semantically correct* family, not merely the nearest hue.
+  Spot-check: the "Email verified" banner must reference `success`, and retuning
+  `--color-module-habits` must leave it untouched.
+
+  **Amended 2026-07-17 (was: "zero `(violet|sky|cyan|emerald|orange)-[0-9]{3}`
+  literals in `src/`").** That bar was wrong and unachievable. During Task 3 the
+  implementer and an independent reviewer each audited the remaining literals
+  file-by-file and agreed 19 must stay, because this codebase has a **third
+  category** the two-family design missed — see "Valence: known debt" below.
 - `font-mono` resolves to a real loaded font.
 - `prefers-reduced-motion` disables every wipe.
 - The five module accents remain distinguishable in the insights charts and the
   widget row, in both light and dark.
 - The hero headline does not shift on load.
+
+## Valence: known debt (added 2026-07-17)
+
+The two-family design (module identity vs status) missed a **third category**.
+Verified during Task 3 by the implementer and independently by a reviewer that
+tried to break each retention and could not:
+
+- **Mood valence ramps** — `MOOD_COLOR` (`module-widgets.tsx`) and `SCORE_BG`
+  (`mood-history.tsx`) map mood score 1→5 as red → orange → yellow → emerald →
+  violet. **Two of the five steps (`red`, `yellow`) have no module token at
+  all.** Migrating only the orange/violet steps would make a Fitness retune
+  repaint "slightly sad".
+- **Sentiment / trend / correlation-strength badges** — `insights/page.tsx`
+  (`STRENGTH_STYLE`, and a trend arrow paired with a `rose-500` sibling),
+  `mood-insights.tsx`, `journal/page.tsx` (`SENTIMENT_STYLE`). These express
+  direction or magnitude over arbitrary pairs (sleep↔mood, water↔energy), not a
+  module.
+- **Decorative sibling palettes** — `fitness-stats.tsx`'s `STAT_ICONS` gives
+  four tiles *within the Fitness page* four hues purely for variety. "Total
+  minutes" being sky has no tie to Sleep.
+- **The Energy chart line** — `ENERGY_CHART_COLORS` is orange but is plotted
+  *inside the Mood chart*. Aliasing it to `module-fitness` would make a Fitness
+  retune repaint a line in Mood.
+- **`weekly-challenges.tsx`** — both its colored elements are status
+  (`c.completed`). `Challenge.module` spans mood|sleep|water|exercise|habits|
+  journal, so a green "done" bar cannot be `module-habits` for a completed
+  *water* challenge. (An earlier draft of this spec claimed otherwise; that
+  claim was unfounded.)
+- **`constants.ts`'s `HABIT_COLORS`** — a `-300` pastel swatch array that is
+  **dead code**; its only reference is its own declaration.
+
+**Decision: leave these as Tailwind literals for now.** A
+`--color-valence-{positive,neutral,negative}` family (plus possibly a 5-step
+mood ramp) is the coherent long-term answer, but it is scope growth on dashboard
+surfaces this project is not redesigning. Recorded here as explicit debt rather
+than silently absorbed.
+
+## Pre-existing bugs found and deliberately preserved
+
+Task 3's migration surfaced two hue-assignment bugs that **predate this work**.
+They were preserved verbatim as tokens (with `NOTE:` comments at the call sites)
+rather than silently fixed, since correcting them is a behavior change outside
+the migration's remit:
+
+- `module-widgets.tsx` — the **water** widget renders in **sleep's** hue.
+- `module-widgets.tsx` — the **fitness** widget renders in **habits'** hue.
+
+Also note: `-400` and `-500` literals both collapse to a single token value
+(there is no `/400` variant). So `bg-sky-400` (#38bdf8, bright) →
+`bg-module-sleep` (#5f87a6, muted) is a deliberate, visible hue shift from the
+P3 retune. "Preserved verbatim" means *module identity* preserved, not pixel
+color.
 
 ## Alternatives considered
 
