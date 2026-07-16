@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { prefersReducedMotion, whenSomeInView } from "@/lib/motion";
 
 type RevealState = "hidden" | "in" | "instant";
 
@@ -30,25 +31,16 @@ export function Reveal({
     const el = ref.current;
     if (!el) return;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      // Reveal on the next frame (not synchronously in the effect body) and
-      // skip the animation entirely.
+    if (prefersReducedMotion()) {
       const id = requestAnimationFrame(() => setState("instant"));
       return () => cancelAnimationFrame(id);
     }
 
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setState("in");
-          io.disconnect();
-        }
-      },
-      { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }
-    );
-
-    io.observe(el);
-    return () => io.disconnect();
+    return whenSomeInView([el], {
+      onEnter: () => setState("in"),
+      once: true,
+      threshold: 0.15,
+    });
   }, []);
 
   return (
