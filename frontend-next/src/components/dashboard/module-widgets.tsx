@@ -30,7 +30,7 @@ function GoalBar({ value, max, colorClass = "bg-foreground" }: { value: number; 
   return (
     <div className="w-full h-1.5 bg-muted rounded-full mt-2 overflow-hidden">
       <div
-        className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-green-400" : colorClass}`}
+        className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-success" : colorClass}`}
         style={{ width: `${pct}%` }}
       />
     </div>

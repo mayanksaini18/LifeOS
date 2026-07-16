@@ -41,7 +41,7 @@ export function WaterTracker() {
             // not water's cyan (same pre-existing mismatch as the dashboard
             // water widget). Preserved verbatim as module-sleep during this
             // literal-to-token migration. Flag for a follow-up fix if unintentional.
-            className={`h-full rounded-full transition-all duration-300 ${percentage >= 100 ? "bg-green-400" : "bg-module-sleep"}`}
+            className={`h-full rounded-full transition-all duration-300 ${percentage >= 100 ? "bg-success" : "bg-module-sleep"}`}
             style={{ width: `${percentage}%` }}
           />
         </div>

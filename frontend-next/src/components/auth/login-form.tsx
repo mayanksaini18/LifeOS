@@ -89,7 +89,7 @@ export function LoginForm() {
       </div>
 
       {verified === "1" && (
-        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/8 px-4 py-3">
+        <div className="rounded-lg border border-success/30 bg-success/8 px-4 py-3">
           <p className="text-sm text-foreground">Email verified. Sign in to continue.</p>
         </div>
       )}
@@ -111,7 +111,7 @@ export function LoginForm() {
       )}
 
       {needsVerification && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/8 px-4 py-3 space-y-2">
+        <div className="rounded-lg border border-warning/30 bg-warning/8 px-4 py-3 space-y-2">
           <p className="text-sm text-foreground">
             Please verify your email to continue. We sent a link to{" "}
             <span className="font-medium">{needsVerification}</span>.

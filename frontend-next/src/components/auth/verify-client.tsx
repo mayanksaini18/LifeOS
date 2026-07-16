@@ -58,7 +58,7 @@ export function VerifyClient() {
 
       {status === "success" && (
         <>
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-500">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success/15 text-success">
             <CheckmarkCircle02Icon className="h-6 w-6" />
           </div>
           <div>
