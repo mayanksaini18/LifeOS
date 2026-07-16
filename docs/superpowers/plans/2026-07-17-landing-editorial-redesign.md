@@ -1123,14 +1123,20 @@ export const RevealsOnEnter: Story = {
 };
 
 /**
- * Before entering, content must be hidden — otherwise it flashes at full
- * opacity for a frame and then wipes in, which looks broken.
+ * The wipe must be a one-shot: `whenSomeInView` is called with `once`, so the
+ * class is added exactly once and never removed. If a later refactor drops
+ * `once`, content would re-wipe every time it re-enters the viewport, which
+ * reads as a glitch on scroll-up.
  */
-export const HiddenBeforeEnter: Story = {
-  args: { children: 'Hidden' },
+export const RevealIsOneShot: Story = {
+  args: { children: 'One shot' },
   play: async ({ canvas }) => {
-    const el = canvas.getByText('Hidden');
-    await expect(el).toBeInTheDocument();
+    const el = canvas.getByText('One shot');
+    await expect.poll(() => el.className, { timeout: 2000 }).toContain('animate-mask-in');
+    // Still applied — and still only once — after the observer would have
+    // fired again.
+    await expect(el.className).not.toContain('opacity-0');
+    await expect(el.className.match(/animate-mask-in/g)).toHaveLength(1);
   },
 };
 ```
@@ -1231,7 +1237,7 @@ export function MaskReveal({
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `npm test -- src/components/motion/mask-reveal.stories.tsx -t "Reveals On Enter|Hidden Before Enter"`
+Run: `npm test -- src/components/motion/mask-reveal.stories.tsx -t "Reveals On Enter|Reveal Is One Shot"`
 Expected: PASS.
 
 - [ ] **Step 5: Fold `Reveal` onto the shared helper**
