@@ -69,37 +69,63 @@ const FALLBACK: ModuleChartColors = {
 
 /** Live `--color-module-*` values, converted into the rgba variants each chart needs. */
 export function useModuleChartColors(): ModuleChartColors {
-  const { resolvedTheme } = useTheme();
   const [colors, setColors] = useState<ModuleChartColors>(FALLBACK);
 
   useEffect(() => {
-    const mood = cssVar("--module-mood");
-    const sleep = cssVar("--module-sleep");
-    const water = cssVar("--module-water");
-    const habits = cssVar("--module-habits");
+    const readColors = () => {
+      const mood = cssVar("--module-mood");
+      const sleep = cssVar("--module-sleep");
+      const water = cssVar("--module-water");
+      const habits = cssVar("--module-habits");
 
-    setColors({
-      mood: {
-        line: mood,
-        fill: `rgba(${hexToRgbTriplet(mood)}, 0.12)`,
-        point: mood,
-      },
-      sleep: {
-        bar: `rgba(${hexToRgbTriplet(sleep)}, 0.55)`,
-        barHover: `rgba(${hexToRgbTriplet(sleep)}, 0.85)`,
-      },
-      weekly: {
-        line: habits,
-        fill: `rgba(${hexToRgbTriplet(habits)}, 0.1)`,
-        point: habits,
-      },
-      water: {
-        bar: `rgba(${hexToRgbTriplet(water)}, 0.55)`,
-        barHover: `rgba(${hexToRgbTriplet(water)}, 0.85)`,
-        barGoal: `rgba(${hexToRgbTriplet(water)}, 0.85)`,
-      },
+      setColors({
+        mood: {
+          line: mood,
+          fill: `rgba(${hexToRgbTriplet(mood)}, 0.12)`,
+          point: mood,
+        },
+        sleep: {
+          bar: `rgba(${hexToRgbTriplet(sleep)}, 0.55)`,
+          barHover: `rgba(${hexToRgbTriplet(sleep)}, 0.85)`,
+        },
+        weekly: {
+          line: habits,
+          fill: `rgba(${hexToRgbTriplet(habits)}, 0.1)`,
+          point: habits,
+        },
+        water: {
+          bar: `rgba(${hexToRgbTriplet(water)}, 0.55)`,
+          barHover: `rgba(${hexToRgbTriplet(water)}, 0.85)`,
+          barGoal: `rgba(${hexToRgbTriplet(water)}, 0.85)`,
+        },
+      });
+    };
+
+    // Read once immediately: covers first mount, where next-themes' blocking
+    // inline script has already applied `.dark` (if applicable) before
+    // hydration runs, so the DOM is already correct.
+    readColors();
+
+    // `next-themes` toggles the `.dark` class on `document.documentElement`
+    // inside its *own* effect. This hook's consumer is nested under
+    // `ThemeProvider`, and React flushes passive effects child-first within
+    // a commit, so a read keyed on `resolvedTheme` (the previous approach)
+    // fired *before* next-themes had applied the class — capturing the
+    // outgoing theme's colors a render early. Because `resolvedTheme` had
+    // already changed, the effect wouldn't re-run on the next render either,
+    // so the stale colors persisted until the *next* toggle.
+    //
+    // Observing the `class` attribute directly reacts to the actual state
+    // this hook depends on (the class being applied), not a same-commit
+    // proxy for it, so it's immune to effect ordering between components.
+    const observer = new MutationObserver(readColors);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
     });
-  }, [resolvedTheme]);
+
+    return () => observer.disconnect();
+  }, []);
 
   return colors;
 }
