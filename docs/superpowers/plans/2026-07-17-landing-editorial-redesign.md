@@ -21,6 +21,7 @@
 - **Theming is `next-themes` + `.dark` class.** Do not introduce CSS `light-dark()`.
 - **Token indirection pattern:** `@theme inline { --color-x: var(--x) }` + `:root { --x: … }` + `.dark { --x: … }`. This is the existing convention in `globals.css` and is what makes dark mode work. Follow it.
 - **Stories are tagged `tags: ['ai-generated']`** and import `expect` from `storybook/test`.
+- **`expect.poll` does not exist here.** Storybook 10.5 ships a custom minimal `expect` from `storybook/test` (verified in `node_modules/storybook/dist/test/index.js`) with no `.poll`. Use `waitFor(() => expect(...)…, { timeout })` instead — same polling semantics, already used elsewhere in the repo. Import it from `storybook/test` alongside `expect`.
 - **Vitest test names are the story's *display* name, not its export name.** Storybook title-cases exports, so `CssCheck` becomes `"Css Check"` and `SingleCta` becomes `"Single Cta"`. `-t CssCheck` matches **nothing and skips silently** — a green run that tested zero code. Every command below therefore filters by **file path** first, which cannot silently skip. Verified against the existing suite: `-t "Css Check"` → 1 passed / 40 skipped; by file path → 10 passed.
 - **Baseline:** the suite is green before this work starts — 11 files, 41 tests, ~7s.
 - All paths below are relative to `frontend-next/` unless stated otherwise.
@@ -1014,9 +1015,10 @@ type Story = StoryObj<typeof meta>;
 
 export const GroupEntersTogether: Story = {
   play: async ({ canvas }) => {
-    await expect
-      .poll(() => canvas.getByTestId('entered').textContent, { timeout: 2000 })
-      .toBe('a,b');
+    await waitFor(
+      () => expect(canvas.getByTestId('entered').textContent).toBe('a,b'),
+      { timeout: 2000 }
+    );
   },
 };
 ```
@@ -1146,7 +1148,7 @@ export const RevealsOnEnter: Story = {
   args: { children: 'A better way to take care of yourself.' },
   play: async ({ canvas }) => {
     const el = canvas.getByText(/a better way/i);
-    await expect.poll(() => el.className, { timeout: 2000 }).toContain('animate-mask-in');
+    await waitFor(() => expect(el.className).toContain('animate-mask-in'), { timeout: 2000 });
   },
 };
 
@@ -1160,7 +1162,7 @@ export const RevealIsOneShot: Story = {
   args: { children: 'One shot' },
   play: async ({ canvas }) => {
     const el = canvas.getByText('One shot');
-    await expect.poll(() => el.className, { timeout: 2000 }).toContain('animate-mask-in');
+    await waitFor(() => expect(el.className).toContain('animate-mask-in'), { timeout: 2000 });
     // Still applied — and still only once — after the observer would have
     // fired again.
     await expect(el.className).not.toContain('opacity-0');
@@ -1520,9 +1522,10 @@ type Story = StoryObj<typeof meta>;
 export const Rotates: Story = {
   args: { words: ['yourself', 'your sleep', 'your mood'], interval: 1400 },
   play: async ({ canvas }) => {
-    await expect
-      .poll(() => canvas.getByTestId('rotating-current').textContent, { timeout: 5000 })
-      .toBe('your sleep');
+    await waitFor(
+      () => expect(canvas.getByTestId('rotating-current').textContent).toBe('your sleep'),
+      { timeout: 5000 }
+    );
   },
 };
 
