@@ -63,7 +63,7 @@ export function ModuleWidgets() {
       })(),
       label: "Mood",
       value: latestMood ? `${latestMood.score}/5` : "No entry",
-      bar: latestMood ? <GoalBar value={latestMood.score} max={moodGoal} colorClass="bg-violet-400" /> : null,
+      bar: latestMood ? <GoalBar value={latestMood.score} max={moodGoal} colorClass="bg-module-mood" /> : null,
       subtext: latestMood
         ? latestMood.energy
           ? `⚡ Energy ${latestMood.energy}/5 · Goal ≥ ${moodGoal}/5`
@@ -75,7 +75,7 @@ export function ModuleWidgets() {
       icon: <Moon02Icon className="h-4 w-4 text-muted-foreground" />,
       label: "Sleep",
       value: latestSleep ? `${latestSleep.duration}h` : "No entry",
-      bar: latestSleep ? <GoalBar value={latestSleep.duration} max={sleepGoal} colorClass="bg-sky-400" /> : null,
+      bar: latestSleep ? <GoalBar value={latestSleep.duration} max={sleepGoal} colorClass="bg-module-sleep" /> : null,
       subtext: latestSleep ? `Goal ${sleepGoal}h` : null,
     },
     {
@@ -83,7 +83,12 @@ export function ModuleWidgets() {
       icon: <DropletIcon className="h-4 w-4 text-muted-foreground" />,
       label: "Water",
       value: `${glasses}/${waterGoal}`,
-      bar: <GoalBar value={glasses} max={waterGoal} colorClass="bg-sky-400" />,
+      // NOTE: this bar has always rendered in the sleep module's hue, not
+      // water's cyan (likely a copy-paste artifact from the widget above).
+      // Preserved verbatim as module-sleep during this literal-to-token
+      // migration rather than silently reassigning it. Flag for a follow-up
+      // fix if unintentional.
+      bar: <GoalBar value={glasses} max={waterGoal} colorClass="bg-module-sleep" />,
       subtext: `Goal ${waterGoal} glasses`,
     },
     {
@@ -91,7 +96,11 @@ export function ModuleWidgets() {
       icon: <Dumbbell01Icon className="h-4 w-4 text-muted-foreground" />,
       label: "Fitness",
       value: `${activeDays}/${exerciseGoal} days`,
-      bar: <GoalBar value={activeDays} max={exerciseGoal} colorClass="bg-emerald-400" />,
+      // NOTE: this bar has always rendered in the habits module's hue, not
+      // fitness's orange (likely a copy-paste artifact). Preserved verbatim
+      // as module-habits during this literal-to-token migration rather than
+      // silently reassigning it. Flag for a follow-up fix if unintentional.
+      bar: <GoalBar value={activeDays} max={exerciseGoal} colorClass="bg-module-habits" />,
       subtext: `Goal ${exerciseGoal} days/week`,
     },
   ];

@@ -12,6 +12,14 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
+  // Mirrors the "@/*" -> "./src/*" path mapping in tsconfig.json. Storybook's
+  // Vite builder doesn't read tsconfig paths automatically, so without this,
+  // any story importing app source via "@/..." fails to resolve.
+  resolve: {
+    alias: {
+      '@': path.join(dirname, 'src'),
+    },
+  },
   test: {
     projects: [
       {

@@ -12,11 +12,9 @@ import {
 import { Line } from "react-chartjs-2";
 import { useWeeklyAnalytics } from "@/hooks/use-habits";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useChartScaleColors, CHART_COLORS } from "@/lib/chart-theme";
+import { useChartScaleColors, useModuleChartColors } from "@/lib/chart-theme";
 
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
-
-const C = CHART_COLORS.weekly;
 
 interface StatsProps {
   xp: number;
@@ -26,6 +24,7 @@ interface StatsProps {
 export function WeeklyChart({ xp, level }: StatsProps) {
   const { data, isLoading, isError } = useWeeklyAnalytics();
   const scale = useChartScaleColors();
+  const C = useModuleChartColors().weekly;
 
   const chartData = data
     ? {

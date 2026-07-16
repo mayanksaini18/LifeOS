@@ -4,15 +4,14 @@ import { useSleepStats } from "@/hooks/use-sleep";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip } from "chart.js";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useChartScaleColors, CHART_COLORS } from "@/lib/chart-theme";
+import { useChartScaleColors, useModuleChartColors } from "@/lib/chart-theme";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
-
-const C = CHART_COLORS.sleep;
 
 export function SleepChart() {
   const { data: stats, isLoading } = useSleepStats();
   const scale = useChartScaleColors();
+  const C = useModuleChartColors().sleep;
 
   if (isLoading) return <Skeleton className="h-64 w-full rounded-xl" />;
 

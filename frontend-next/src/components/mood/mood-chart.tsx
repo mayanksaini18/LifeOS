@@ -13,16 +13,15 @@ import {
   Legend,
 } from "chart.js";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useChartScaleColors, CHART_COLORS } from "@/lib/chart-theme";
+import { useChartScaleColors, useModuleChartColors, ENERGY_CHART_COLORS } from "@/lib/chart-theme";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler, Legend);
-
-const CM = CHART_COLORS.mood;
-const CE = CHART_COLORS.energy;
 
 export function MoodChart() {
   const { data, isLoading } = useMoodTrends();
   const scale = useChartScaleColors();
+  const CM = useModuleChartColors().mood;
+  const CE = ENERGY_CHART_COLORS;
 
   if (isLoading) return <Skeleton className="h-52 w-full rounded-xl" />;
 

@@ -37,7 +37,11 @@ export function WaterTracker() {
         <p className="text-xs text-muted-foreground mt-1">{percentage}%</p>
         <div className="w-full h-2 bg-muted rounded-full mt-3 max-w-xs mx-auto">
           <div
-            className={`h-full rounded-full transition-all duration-300 ${percentage >= 100 ? "bg-green-400" : "bg-sky-400"}`}
+            // NOTE: this fill has always rendered in the sleep module's hue,
+            // not water's cyan (same pre-existing mismatch as the dashboard
+            // water widget). Preserved verbatim as module-sleep during this
+            // literal-to-token migration. Flag for a follow-up fix if unintentional.
+            className={`h-full rounded-full transition-all duration-300 ${percentage >= 100 ? "bg-green-400" : "bg-module-sleep"}`}
             style={{ width: `${percentage}%` }}
           />
         </div>
