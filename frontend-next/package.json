@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "next build && vitest run --project=storybook",
+    "test": "next build && node scripts/verify-static-routes.mjs && vitest run --project=storybook",
     "test:watch": "vitest --project=storybook",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
