@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Reveal } from "./reveal";
+import { MaskReveal } from "@/components/motion/mask-reveal";
 
 /**
  * Section — the shared vertical-rhythm + container wrapper every landing
@@ -27,20 +27,21 @@ export function Section({
         className
       )}
     >
-      <div className="mx-auto w-full max-w-6xl px-6 md:px-16">{children}</div>
+      <div className="mx-auto w-full max-w-7xl px-6 md:px-16">{children}</div>
     </section>
   );
 }
 
 /**
- * SectionHeading — canonical eyebrow / title / subtitle stack. Reveals on
- * scroll. Centered by default; pass align="start" for left-aligned headers.
+ * SectionHeading — canonical eyebrow / title / subtitle stack. Wipes in on
+ * scroll. Left-aligned by default; pass align="center" for the rare centered
+ * header.
  */
 export function SectionHeading({
   eyebrow,
   title,
   subtitle,
-  align = "center",
+  align = "start",
   className,
 }: {
   eyebrow?: string;
@@ -50,26 +51,26 @@ export function SectionHeading({
   className?: string;
 }) {
   return (
-    <Reveal
+    <MaskReveal
       className={cn(
-        "max-w-2xl",
+        "max-w-3xl",
         align === "center" && "mx-auto text-center",
         className
       )}
     >
       {eyebrow ? (
-        <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+        <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="text-3xl md:text-4xl font-semibold tracking-tight leading-[1.15]">
+      <h2 className="font-heading text-4xl font-light leading-[1.02] tracking-[-0.03em] md:text-5xl">
         {title}
       </h2>
       {subtitle ? (
-        <p className="mt-4 text-base leading-relaxed text-muted-foreground">
+        <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground">
           {subtitle}
         </p>
       ) : null}
-    </Reveal>
+    </MaskReveal>
   );
 }
