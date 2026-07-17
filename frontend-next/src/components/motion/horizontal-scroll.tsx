@@ -37,6 +37,12 @@ export function HorizontalScroll({
         walk: 0,
       };
       track.classList.remove("snap-x", "snap-mandatory");
+      // Capture the pointer: the track is content-sized (~120px cards) while
+      // a real horizontal drag naturally arcs, so the cursor routinely drifts
+      // outside its box mid-drag. Capture keeps pointermove/pointerup
+      // targeting the track regardless of where the pointer physically is;
+      // the browser releases it implicitly on pointerup/pointercancel.
+      track.setPointerCapture(e.pointerId);
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -72,7 +78,15 @@ export function HorizontalScroll({
     track.addEventListener("pointerdown", onPointerDown);
     track.addEventListener("pointermove", onPointerMove);
     track.addEventListener("pointerup", onPointerUp);
-    track.addEventListener("pointerleave", onPointerUp);
+    // No `pointerleave` here: with the pointer captured, boundary events
+    // (pointerleave/pointerout) still fire from the pointer's real screen
+    // position regardless of capture — treating pointerleave as drag-end
+    // would end the drag the instant the cursor drifts outside the track's
+    // box, defeating the point of capturing in the first place.
+    // `pointercancel` is the correct "gesture stolen" signal under capture
+    // (e.g. the browser hands the gesture to a scroll/back-navigation), so
+    // it gets the same drag-end handling as pointerup.
+    track.addEventListener("pointercancel", onPointerUp);
     track.addEventListener("click", onClick);
     track.addEventListener("dragstart", onDragStart);
 
@@ -80,7 +94,7 @@ export function HorizontalScroll({
       track.removeEventListener("pointerdown", onPointerDown);
       track.removeEventListener("pointermove", onPointerMove);
       track.removeEventListener("pointerup", onPointerUp);
-      track.removeEventListener("pointerleave", onPointerUp);
+      track.removeEventListener("pointercancel", onPointerUp);
       track.removeEventListener("click", onClick);
       track.removeEventListener("dragstart", onDragStart);
     };

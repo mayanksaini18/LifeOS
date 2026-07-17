@@ -81,6 +81,59 @@ export const DragTogglesSnapAndScrolls: Story = {
   },
 };
 
+/**
+ * Regression test for the fix-wave-1 finding: without `setPointerCapture`,
+ * a real drag where the cursor drifts outside the track's bounding box mid-
+ * drag (very plausible here -- the track's height is content-sized to
+ * ~120px cards, while a hand naturally arcs during a horizontal drag) fires
+ * `pointerleave`, which was wired to the same drag-end handler as
+ * `pointerup` -- ending the drag, restoring snap, and dropping every
+ * `pointermove` that follows.
+ *
+ * The fix is two parts: (1) capture the pointer on `pointerdown`, and (2)
+ * stop treating `pointerleave` as drag-end, since boundary events like
+ * `pointerleave` fire from the pointer's *real* screen position regardless
+ * of capture -- keeping the old wiring would reproduce this exact bug even
+ * with capture active.
+ *
+ * This test cannot reproduce the geometry (dispatchEvent always invokes
+ * listeners on the exact node it's called on, bypassing hit-testing, so
+ * there's no way to synthesize "the pointer is physically outside the
+ * track's box" -- see the `firePointer` doc comment above). What it *can*
+ * do, faithfully, is test the wiring itself: dispatching `pointerleave`
+ * directly on the track exercises exactly the listener (or absence of one)
+ * that the fix touches, independent of geometry. Before the fix, the track
+ * has a `pointerleave` listener bound to the drag-end handler, and firing it
+ * here ends the drag and drops the next `pointermove`. After the fix, no
+ * such listener exists, so the drag survives.
+ */
+export const PointerLeaveDoesNotEndDrag: Story = {
+  args: { children: cards },
+  play: async ({ canvas }) => {
+    const track = canvas.getByTestId('hscroll-track');
+
+    firePointer(track, 'pointerdown', 250);
+    firePointer(track, 'pointermove', 100); // 150px: past DRAG_THRESHOLD
+    expect(track.scrollLeft).toBe(150);
+    expect(track.className).toContain('cursor-grabbing');
+
+    // Simulates the cursor drifting outside the track's box mid-drag.
+    firePointer(track, 'pointerleave', 100);
+
+    // The drag must still be live: snap must not have been restored...
+    expect(track.className).not.toContain('snap-x');
+    expect(track.className).toContain('cursor-grabbing');
+
+    // ...and a further pointermove must still be tracked.
+    firePointer(track, 'pointermove', 50); // 200px total
+    expect(track.scrollLeft).toBe(200);
+
+    firePointer(track, 'pointerup', 50);
+    expect(track.className).toContain('snap-x');
+    expect(track.className).toContain('snap-mandatory');
+  },
+};
+
 function ClickTrackerHarness() {
   const [count, setCount] = useState(0);
   return (
