@@ -16,7 +16,12 @@ type Story = StoryObj<typeof meta>;
  */
 export const SingleCta: Story = {
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('link', { name: /create an account/i })).toBeVisible();
+    const cta = canvas.getByRole('link', { name: /create an account/i });
+    await expect(cta).toBeVisible();
+    // The whole point of routing all auth through one destination is that
+    // this link actually goes there. Role + accessible name alone pass even
+    // if the href points at a dead or wrong route, so assert it explicitly.
+    await expect(cta).toHaveAttribute('href', '/register');
     await expect(canvas.queryByText(/continue with phone/i)).toBeNull();
     await expect(canvas.queryByText(/google/i)).toBeNull();
   },
