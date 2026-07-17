@@ -31,5 +31,6 @@ export const HasAccessibleLabel: Story = {
   play: async ({ canvas }) => {
     const root = canvas.getByTestId('rotating-root');
     await expect(root).toHaveAttribute('aria-label', 'yourself');
+    await expect(canvas.getByTestId('rotating-current')).toHaveAttribute('aria-hidden', 'true');
   },
 };
