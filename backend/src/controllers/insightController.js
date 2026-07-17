@@ -5,6 +5,7 @@ const Sleep = require('../models/Sleep');
 const Water = require('../models/Water');
 const Fitness = require('../models/Fitness');
 const { startOfDayDaysAgo } = require('../utils/time');
+const { isEnabled, getClient, getModel } = require('../services/ai');
 
 async function gatherWeeklyData(userId, timeZone) {
   const weekAgo = startOfDayDaysAgo(new Date(), timeZone, 7);
@@ -46,26 +47,30 @@ exports.getWeeklyReport = async (req, res, next) => {
 
     const weeklyData = await gatherWeeklyData(req.user._id, req.user.timezone);
 
-    // If Anthropic SDK is available, generate AI report
+    // Generate the AI report via the shared client (single source of model +
+    // timeout config). Log real failures instead of silently falling back.
     let content;
-    try {
-      const Anthropic = require('@anthropic-ai/sdk');
-      const client = new Anthropic();
-
-      const message = await client.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        messages: [{
-          role: 'user',
-          content: `You are a wellness coach. Analyze this user's weekly data and provide a brief, encouraging wellness report with 3-4 key insights and 2 actionable suggestions. Be specific about correlations you notice. Keep it under 300 words.
+    if (isEnabled()) {
+      try {
+        const message = await getClient().messages.create({
+          model: getModel(),
+          max_tokens: 1024,
+          messages: [{
+            role: 'user',
+            content: `You are a wellness coach. Analyze this user's weekly data and provide a brief, encouraging wellness report with 3-4 key insights and 2 actionable suggestions. Be specific about correlations you notice. Keep it under 300 words.
 
 Weekly Data:
 ${JSON.stringify(weeklyData, null, 2)}`
-        }]
-      });
-      content = message.content[0].text;
-    } catch {
-      // Fallback if no API key or SDK
+          }]
+        });
+        content = message.content?.[0]?.type === 'text' ? message.content[0].text : '';
+      } catch (err) {
+        console.error('[insights weekly] AI generation failed:', err.message);
+      }
+    }
+
+    if (!content) {
+      // Fallback: AI disabled, errored, or returned nothing — compute a summary.
       const { habits, moods, sleep, water, fitness } = weeklyData;
       const avgMood = moods.length ? (moods.reduce((s, m) => s + m.score, 0) / moods.length).toFixed(1) : 'N/A';
       const avgSleep = sleep.length ? (sleep.reduce((s, e) => s + (e.duration || 0), 0) / sleep.length).toFixed(1) : 'N/A';

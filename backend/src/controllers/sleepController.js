@@ -15,6 +15,14 @@ exports.logSleep = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+exports.deleteSleep = async (req, res, next) => {
+  try {
+    const entry = await Sleep.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+    if (!entry) return res.status(404).json({ message: 'Entry not found' });
+    res.json({ message: 'Entry deleted' });
+  } catch (err) { next(err); }
+};
+
 exports.getSleepHistory = async (req, res, next) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 30, 100);

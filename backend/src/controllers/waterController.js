@@ -43,6 +43,14 @@ exports.getWaterHistory = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+exports.deleteWater = async (req, res, next) => {
+  try {
+    const entry = await Water.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+    if (!entry) return res.status(404).json({ message: 'Entry not found' });
+    res.json({ message: 'Entry deleted' });
+  } catch (err) { next(err); }
+};
+
 exports.setWaterGoal = async (req, res, next) => {
   try {
     const { goal } = req.body;

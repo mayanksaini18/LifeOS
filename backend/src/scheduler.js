@@ -34,9 +34,10 @@ async function processReminders() {
       { 'pushSubscriptions.0': { $exists: true } },
       { emailReminders: true },
     ],
-  });
+  }).lean();
 
   for (const user of users) {
+   try {
     // Match the reminder time against the user's LOCAL clock, and check "already
     // logged today" against the user's LOCAL day — so a "20:00" reminder fires
     // at 8pm in their timezone, not at 20:00 UTC.
@@ -84,6 +85,10 @@ async function processReminders() {
         $pull: { pushSubscriptions: { endpoint: { $in: expiredEndpoints } } }
       });
     }
+   } catch (err) {
+    // Isolate per-user failures so one bad user doesn't skip everyone else.
+    console.error(`[scheduler] reminder failed for user ${user._id}:`, err.message);
+   }
   }
 }
 

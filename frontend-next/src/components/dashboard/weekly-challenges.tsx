@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { useChallenges } from "@/hooks/use-challenges";
+import { useAuthStore } from "@/stores/auth-store";
 import type { Challenge } from "@/types/challenge";
 import { ChampionIcon, CheckmarkCircle02Icon } from "hugeicons-react";
 import { cn } from "@/lib/utils";
@@ -8,6 +10,17 @@ import { cn } from "@/lib/utils";
 export function WeeklyChallenges() {
   const { data, isLoading } = useChallenges();
   const challenges = data?.challenges ?? [];
+
+  // Challenge progress (and its XP payout) is computed server-side when this
+  // loads, so sync the returned xp/level into the header/sidebar store.
+  const updateUserStats = useAuthStore((s) => s.updateUserStats);
+  const xp = data?.user?.xp;
+  const level = data?.user?.level;
+  useEffect(() => {
+    if (typeof xp === "number" && typeof level === "number") {
+      updateUserStats(xp, level);
+    }
+  }, [xp, level, updateUserStats]);
 
   if (isLoading) {
     return (

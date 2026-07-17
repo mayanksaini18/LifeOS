@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { body } = require('express-validator');
+const { body, param } = require('express-validator');
 const auth = require('../middlewares/auth');
 const validate = require('../middlewares/validate');
-const { logSleep, getSleepHistory, getSleepStats } = require('../controllers/sleepController');
+const { logSleep, getSleepHistory, getSleepStats, deleteSleep } = require('../controllers/sleepController');
 
 const sleepValidation = [
   body('duration').optional().isFloat({ min: 0, max: 24 }).withMessage('Duration must be between 0 and 24 hours'),
@@ -18,5 +18,6 @@ router.use(auth);
 router.post('/', sleepValidation, validate, logSleep);
 router.get('/', getSleepHistory);
 router.get('/stats', getSleepStats);
+router.delete('/:id', [param('id').isMongoId()], validate, deleteSleep);
 
 module.exports = router;
