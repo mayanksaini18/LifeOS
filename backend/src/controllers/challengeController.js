@@ -109,15 +109,17 @@ exports.getChallenges = async (req, res, next) => {
       }
     }
 
-    // Refresh user XP/level after possible increments
+    // Refresh user XP/level after possible increments, and return it so the
+    // client can update the header/sidebar without a full reload.
+    const fresh = await User.findById(req.user._id).select('xp level').lean();
+    let level = fresh.level;
     if (challenges.some((c) => c.completed)) {
-      const fresh = await User.findById(req.user._id).lean();
-      const level = Math.floor(fresh.xp / XP_PER_LEVEL) + 1;
+      level = Math.floor(fresh.xp / XP_PER_LEVEL) + 1;
       if (level !== fresh.level) {
         await User.updateOne({ _id: req.user._id }, { $set: { level } });
       }
     }
 
-    res.json({ challenges, weekStart });
+    res.json({ challenges, weekStart, user: { xp: fresh.xp, level } });
   } catch (err) { next(err); }
 };

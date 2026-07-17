@@ -6,15 +6,28 @@ exports.logExercise = async (req, res, next) => {
     const { exercises, date } = req.body;
     const targetDate = resolveDayStart(date, req.user.timezone);
 
-    const totalDuration = exercises.reduce((s, e) => s + (e.duration || 0), 0);
-    const totalCalories = exercises.reduce((s, e) => s + (e.calories || 0), 0);
+    const addDuration = exercises.reduce((s, e) => s + (e.duration || 0), 0);
+    const addCalories = exercises.reduce((s, e) => s + (e.calories || 0), 0);
 
+    // Append to the day's workouts and accumulate totals, rather than replacing
+    // the whole day — logging an evening workout must not wipe the morning run.
     const fitness = await Fitness.findOneAndUpdate(
       { user: req.user._id, date: targetDate },
-      { exercises, totalDuration, totalCalories },
+      {
+        $push: { exercises: { $each: exercises } },
+        $inc: { totalDuration: addDuration, totalCalories: addCalories },
+      },
       { upsert: true, new: true, runValidators: true }
     );
     res.status(201).json(fitness);
+  } catch (err) { next(err); }
+};
+
+exports.deleteFitness = async (req, res, next) => {
+  try {
+    const entry = await Fitness.findOneAndDelete({ _id: req.params.id, user: req.user._id });
+    if (!entry) return res.status(404).json({ message: 'Entry not found' });
+    res.json({ message: 'Entry deleted' });
   } catch (err) { next(err); }
 };
 

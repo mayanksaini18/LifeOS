@@ -68,6 +68,20 @@ app.use(cors({
   credentials: true
 }));
 
+// CSRF hardening: auth cookies are SameSite=None (sent cross-site), so a
+// malicious page could fire state-changing requests with the user's session.
+// CORS only blocks *reading* the response, not the request itself — so reject
+// mutating requests whose Origin isn't allow-listed. A missing Origin (native
+// apps, server-to-server, curl) can't carry a browser session, so it's allowed.
+app.use((req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  const origin = req.get('origin');
+  if (origin && !allowedOrigins.includes(origin)) {
+    return res.status(403).json({ message: 'Cross-origin request blocked' });
+  }
+  next();
+});
+
 app.get('/', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is healthy and running.' });
 });

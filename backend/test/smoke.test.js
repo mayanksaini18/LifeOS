@@ -23,6 +23,7 @@ const User = require('../src/models/User');
 const Mood = require('../src/models/Mood');
 const Habit = require('../src/models/Habit');
 const Water = require('../src/models/Water');
+const Fitness = require('../src/models/Fitness');
 const { startOfDay } = require('../src/utils/time');
 const errorHandler = require('../src/middlewares/errorHandler');
 const { aiLimiter } = require('../src/middlewares/aiLimiter');
@@ -153,6 +154,42 @@ test('water is bucketed by the user timezone (IST local midnight)', async () => 
   assert.equal(res.status, 201);
   const expected = startOfDay(new Date(), 'Asia/Kolkata');
   assert.equal(new Date(res.body.date).getTime(), expected.getTime(), 'stored date must be the IST local midnight');
+});
+
+// ---- exercise logging merges into the day, not overwrites ----
+test('logging a second workout the same day appends (does not wipe the first)', async () => {
+  const { auth } = await makeUser();
+  await request(app).post('/api/fitness').set('Authorization', auth).send({ exercises: [{ name: 'Run', duration: 30 }] });
+  const res = await request(app).post('/api/fitness').set('Authorization', auth).send({ exercises: [{ name: 'Yoga', duration: 20 }] });
+  assert.equal(res.status, 201);
+  assert.equal(res.body.exercises.length, 2, 'both workouts should be present');
+  assert.equal(res.body.totalDuration, 50, 'durations should accumulate');
+});
+
+// ---- delete route removes a user's own entry and is ownership-scoped ----
+test('DELETE /water/:id removes the entry (and only the owner\'s)', async () => {
+  const { user, auth } = await makeUser();
+  const other = await makeUser();
+  const w = await Water.create({ user: user._id, date: startOfDay(new Date(), 'UTC'), glasses: 3 });
+
+  // another user can't delete it
+  const forbidden = await request(app).delete(`/api/water/${w._id}`).set('Authorization', other.auth);
+  assert.equal(forbidden.status, 404);
+  assert.ok(await Water.findById(w._id), 'entry still exists');
+
+  const ok = await request(app).delete(`/api/water/${w._id}`).set('Authorization', auth);
+  assert.equal(ok.status, 200);
+  assert.equal(await Water.findById(w._id), null, 'entry deleted');
+});
+
+// ---- CSRF: mutating requests from a disallowed Origin are blocked ----
+test('a mutating request from a disallowed Origin is rejected (CSRF)', async () => {
+  const { auth } = await makeUser();
+  const evil = await request(app).post('/api/water').set('Authorization', auth).set('Origin', 'https://evil.example').send({ glasses: 1 });
+  assert.equal(evil.status, 403);
+  // No Origin (native/server) is allowed through to the handler.
+  const noOrigin = await request(app).post('/api/water').set('Authorization', auth).send({ glasses: 1 });
+  assert.equal(noOrigin.status, 201);
 });
 
 // ---- CSV export neutralizes spreadsheet formula injection ----
