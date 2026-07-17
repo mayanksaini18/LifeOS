@@ -258,9 +258,6 @@
   .display-heading {
     @apply font-heading font-light tracking-[-0.02em];
   }
-  .pill-cta {
-    @apply rounded-full font-mono text-[10px] uppercase tracking-widest;
-  }
 }
 
 ::view-transition-old(root),
