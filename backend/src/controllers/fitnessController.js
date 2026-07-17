@@ -1,13 +1,10 @@
 const Fitness = require('../models/Fitness');
-
-function getUTCStartOfDay(date) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-}
+const { resolveDayStart, startOfDayDaysAgo } = require('../utils/time');
 
 exports.logExercise = async (req, res, next) => {
   try {
     const { exercises, date } = req.body;
-    const targetDate = date ? getUTCStartOfDay(new Date(date)) : getUTCStartOfDay(new Date());
+    const targetDate = resolveDayStart(date, req.user.timezone);
 
     const totalDuration = exercises.reduce((s, e) => s + (e.duration || 0), 0);
     const totalCalories = exercises.reduce((s, e) => s + (e.calories || 0), 0);
@@ -33,8 +30,7 @@ exports.getFitnessHistory = async (req, res, next) => {
 
 exports.getFitnessStats = async (req, res, next) => {
   try {
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7);
+    const sevenDaysAgo = startOfDayDaysAgo(new Date(), req.user.timezone, 7);
 
     const entries = await Fitness.find({
       user: req.user._id,
