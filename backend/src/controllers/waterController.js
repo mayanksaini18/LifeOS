@@ -1,13 +1,10 @@
 const Water = require('../models/Water');
-
-function getUTCStartOfDay(date) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-}
+const { startOfDay } = require('../utils/time');
 
 exports.logWater = async (req, res, next) => {
   try {
     const { glasses, goal } = req.body;
-    const today = getUTCStartOfDay(new Date());
+    const today = startOfDay(new Date(), req.user.timezone);
     const userGoal = req.user.goals?.water ?? 8;
 
     // Seed a new day's goal from the user's profile goal (set at onboarding),
@@ -29,7 +26,7 @@ exports.logWater = async (req, res, next) => {
 
 exports.getWaterToday = async (req, res, next) => {
   try {
-    const today = getUTCStartOfDay(new Date());
+    const today = startOfDay(new Date(), req.user.timezone);
     const userGoal = req.user.goals?.water ?? 8;
     const water = await Water.findOne({ user: req.user._id, date: today });
     res.json(water || { glasses: 0, goal: userGoal, date: today });
@@ -49,7 +46,7 @@ exports.getWaterHistory = async (req, res, next) => {
 exports.setWaterGoal = async (req, res, next) => {
   try {
     const { goal } = req.body;
-    const today = getUTCStartOfDay(new Date());
+    const today = startOfDay(new Date(), req.user.timezone);
     const water = await Water.findOneAndUpdate(
       { user: req.user._id, date: today },
       { goal },

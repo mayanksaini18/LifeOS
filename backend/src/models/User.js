@@ -9,6 +9,10 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: function () { return !this.phone; } },
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
+  // IANA timezone (e.g. "Asia/Kolkata"), auto-detected from the browser. Day
+  // boundaries, streaks, reminders and stats are computed in this zone. Existing
+  // users read as undefined -> treated as UTC until their client next syncs it.
+  timezone: { type: String, default: 'UTC' },
   refreshToken: { type: String },
   goals: {
     sleep:    { type: Number, default: 7, min: 1, max: 24 },

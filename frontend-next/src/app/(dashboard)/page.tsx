@@ -7,6 +7,19 @@ import { PlusSignIcon } from "hugeicons-react";
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 
+function greetingFor(timeZone?: string) {
+  // Hour in the user's timezone (falls back to server time if unknown/invalid).
+  let hour: number;
+  try {
+    hour = Number(
+      new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hour12: false, timeZone: timeZone || "UTC" }).format(new Date())
+    );
+  } catch {
+    hour = new Date().getHours();
+  }
+  return hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+}
+
 export default async function DashboardPage() {
   const user = await getSession();
 
@@ -15,7 +28,7 @@ export default async function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 18 ? "afternoon" : "evening"}, {user?.name?.split(" ")[0] || "there"}.
+            Good {greetingFor(user?.timezone)}, {user?.name?.split(" ")[0] || "there"}.
           </h1>
           <p className="text-muted-foreground mt-1">Here&apos;s your overview for today.</p>
         </div>

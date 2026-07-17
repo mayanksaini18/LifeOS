@@ -1,16 +1,13 @@
 const crypto = require('crypto');
 const Journal = require('../models/Journal');
 const { isEnabled, getClient, getModel } = require('../services/ai');
-
-function getUTCStartOfDay(date) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-}
+const { resolveDayStart, startOfLocalDate } = require('../utils/time');
 
 // POST /api/journal  — upsert today's entry
 exports.saveEntry = async (req, res, next) => {
   try {
     const { content, date } = req.body;
-    const day = date ? getUTCStartOfDay(new Date(date)) : getUTCStartOfDay(new Date());
+    const day = resolveDayStart(date, req.user.timezone);
 
     const entry = await Journal.findOneAndUpdate(
       { user: req.user._id, date: day },
@@ -36,7 +33,7 @@ exports.getEntries = async (req, res, next) => {
 // GET /api/journal/:date  — single entry by date (YYYY-MM-DD)
 exports.getEntryByDate = async (req, res, next) => {
   try {
-    const day = getUTCStartOfDay(new Date(req.params.date));
+    const day = startOfLocalDate(req.params.date, req.user.timezone);
     const entry = await Journal.findOne({ user: req.user._id, date: day });
     if (!entry) return res.status(404).json({ message: 'No entry for this date' });
     res.json(entry);

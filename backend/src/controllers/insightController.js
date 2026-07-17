@@ -4,11 +4,10 @@ const Mood = require('../models/Mood');
 const Sleep = require('../models/Sleep');
 const Water = require('../models/Water');
 const Fitness = require('../models/Fitness');
+const { startOfDayDaysAgo } = require('../utils/time');
 
-async function gatherWeeklyData(userId) {
-  const now = new Date();
-  const weekAgo = new Date(now);
-  weekAgo.setUTCDate(now.getUTCDate() - 7);
+async function gatherWeeklyData(userId, timeZone) {
+  const weekAgo = startOfDayDaysAgo(new Date(), timeZone, 7);
 
   const [habits, moods, sleeps, waters, fitness] = await Promise.all([
     Habit.find({ user: userId, isActive: true }),
@@ -34,9 +33,7 @@ async function gatherWeeklyData(userId) {
 
 exports.getWeeklyReport = async (req, res, next) => {
   try {
-    const now = new Date();
-    const weekStart = new Date(now);
-    weekStart.setUTCDate(now.getUTCDate() - 7);
+    const weekStart = startOfDayDaysAgo(new Date(), req.user.timezone, 7);
 
     // Check cache first
     const cached = await Insight.findOne({
@@ -47,7 +44,7 @@ exports.getWeeklyReport = async (req, res, next) => {
 
     if (cached) return res.json(cached);
 
-    const weeklyData = await gatherWeeklyData(req.user._id);
+    const weeklyData = await gatherWeeklyData(req.user._id, req.user.timezone);
 
     // If Anthropic SDK is available, generate AI report
     let content;
@@ -125,9 +122,7 @@ function direction(r) {
 
 exports.getCorrelations = async (req, res, next) => {
   try {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now);
-    thirtyDaysAgo.setUTCDate(now.getUTCDate() - 30);
+    const thirtyDaysAgo = startOfDayDaysAgo(new Date(), req.user.timezone, 30);
 
     const [moods, sleeps, waters, habits, fitness] = await Promise.all([
       Mood.find({ user: req.user._id, date: { $gte: thirtyDaysAgo } }).sort({ date: 1 }),

@@ -6,15 +6,14 @@ const Fitness = require('../models/Fitness');
 const Habit = require('../models/Habit');
 const Journal = require('../models/Journal');
 const User = require('../models/User');
+const { startOfDayDaysAgo, localWeekday } = require('../utils/time');
 const XP_PER_LEVEL = 100;
 
-function getWeekStart(date = new Date()) {
-  const d = new Date(date);
-  const day = d.getUTCDay();
-  const diff = day === 0 ? 6 : day - 1; // Monday start
-  d.setUTCDate(d.getUTCDate() - diff);
-  d.setUTCHours(0, 0, 0, 0);
-  return d;
+// UTC instant of the most recent local Monday midnight in the user's timezone.
+function getWeekStart(date, timeZone) {
+  const wd = localWeekday(date, timeZone); // 0=Sun..6=Sat
+  const sinceMonday = wd === 0 ? 6 : wd - 1;
+  return startOfDayDaysAgo(date, timeZone, sinceMonday);
 }
 
 const CATALOG = [
@@ -70,9 +69,9 @@ async function computeProgress(userId, challenge, weekStart, weekEnd) {
 
 exports.getChallenges = async (req, res, next) => {
   try {
-    const weekStart = getWeekStart();
-    const weekEnd = new Date(weekStart);
-    weekEnd.setUTCDate(weekEnd.getUTCDate() + 7);
+    const tz = req.user.timezone;
+    const weekStart = getWeekStart(new Date(), tz);
+    const weekEnd = startOfDayDaysAgo(weekStart, tz, -7); // next local Monday midnight
 
     let challenges = await Challenge.find({ user: req.user._id, weekStart }).lean();
 

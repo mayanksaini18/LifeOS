@@ -1,13 +1,10 @@
 const Sleep = require('../models/Sleep');
-
-function getUTCStartOfDay(date) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-}
+const { resolveDayStart, startOfDayDaysAgo } = require('../utils/time');
 
 exports.logSleep = async (req, res, next) => {
   try {
     const { bedtime, wakeTime, duration, quality, notes, date } = req.body;
-    const targetDate = date ? getUTCStartOfDay(new Date(date)) : getUTCStartOfDay(new Date());
+    const targetDate = resolveDayStart(date, req.user.timezone);
 
     const sleep = await Sleep.findOneAndUpdate(
       { user: req.user._id, date: targetDate },
@@ -30,8 +27,7 @@ exports.getSleepHistory = async (req, res, next) => {
 
 exports.getSleepStats = async (req, res, next) => {
   try {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 30);
+    const thirtyDaysAgo = startOfDayDaysAgo(new Date(), req.user.timezone, 30);
 
     const entries = await Sleep.find({
       user: req.user._id,
