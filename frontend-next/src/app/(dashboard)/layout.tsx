@@ -3,6 +3,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Header } from "@/components/layout/header";
 import { HydrateUser } from "@/components/providers/hydrate-user";
+import { TimezoneSync } from "@/components/providers/timezone-sync";
 import { getSession } from "@/lib/auth";
 
 export default async function DashboardLayout({
@@ -19,6 +20,7 @@ export default async function DashboardLayout({
   return (
     <SidebarProvider>
       <HydrateUser user={user} />
+      <TimezoneSync />
       <AppSidebar />
       <div className="flex-1 flex flex-col min-h-screen">
         <Header />

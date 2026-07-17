@@ -23,6 +23,7 @@ export interface User {
   reminderTimes: ReminderTimes;
   emailReminders: boolean;
   onboardingComplete: boolean;
+  timezone: string;
 }
 
 export interface AuthResponse {
