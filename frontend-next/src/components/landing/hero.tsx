@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight01Icon, ArrowDown01Icon } from "hugeicons-react";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { MorphHeadline } from "@/components/motion/morph-headline";
 import { RotatingWord } from "@/components/motion/rotating-word";
 import { cn } from "@/lib/utils";
