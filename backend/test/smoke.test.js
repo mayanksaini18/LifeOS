@@ -192,6 +192,33 @@ test('a mutating request from a disallowed Origin is rejected (CSRF)', async () 
   assert.equal(noOrigin.status, 201);
 });
 
+// ---- email verification: JSON for the frontend page, redirect for direct hits ----
+const sha256 = (s) => require('node:crypto').createHash('sha256').update(s).digest('hex');
+
+test('GET /auth/verify-email returns JSON and verifies when Accept: application/json', async () => {
+  const raw = 'verify-token-xyz';
+  const user = await User.create({
+    email: 'verify@x.com', password: 'x', emailVerified: false,
+    emailVerificationTokenHash: sha256(raw),
+    emailVerificationExpiresAt: new Date(Date.now() + 3600e3),
+  });
+  const res = await request(app).get(`/api/auth/verify-email?token=${raw}`).set('Accept', 'application/json');
+  assert.equal(res.status, 200);
+  assert.equal(res.body.ok, true);
+  assert.equal((await User.findById(user._id)).emailVerified, true);
+});
+
+test('GET /auth/verify-email 400s JSON on a bad token (Accept json)', async () => {
+  const res = await request(app).get('/api/auth/verify-email?token=nope').set('Accept', 'application/json');
+  assert.equal(res.status, 400);
+});
+
+test('GET /auth/verify-email redirects a direct browser hit (no json Accept)', async () => {
+  const res = await request(app).get('/api/auth/verify-email?token=nope').set('Accept', 'text/html').redirects(0);
+  assert.equal(res.status, 302);
+  assert.match(res.headers.location, /verified=0/);
+});
+
 // ---- CSV export neutralizes spreadsheet formula injection ----
 test('GET /export/csv prefixes formula-injection cells', async () => {
   const { user, auth } = await makeUser();
