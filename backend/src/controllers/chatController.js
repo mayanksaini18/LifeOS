@@ -93,6 +93,21 @@ exports.sendMessage = async (req, res, next) => {
     const messages = ordered.map((m) => ({ role: m.role, content: m.content }));
 
     let full = '';
+    let ended = false;
+    let aborted = false;
+
+    // Idempotent teardown: the stream's 'error' and 'end' can both fire, and
+    // writing to / ending an already-ended response throws (and previously
+    // risked crashing the process). Only the first call does anything.
+    const finish = (payload) => {
+      if (ended) return;
+      ended = true;
+      try {
+        if (payload) res.write(`data: ${JSON.stringify(payload)}\n\n`);
+        res.end();
+      } catch { /* socket already gone */ }
+    };
+
     const stream = await getClient().messages.stream({
       model: getModel(),
       max_tokens: 1024,
@@ -100,27 +115,37 @@ exports.sendMessage = async (req, res, next) => {
       messages,
     });
 
+    // If the client disconnects mid-stream, stop paying for the generation.
+    req.on('close', () => {
+      if (!ended) {
+        aborted = true;
+        try { stream.abort?.(); } catch { /* ignore */ }
+      }
+    });
+
     stream.on('text', (delta) => {
+      if (ended) return;
       full += delta;
-      res.write(`data: ${JSON.stringify({ type: 'delta', text: delta })}\n\n`);
+      try {
+        res.write(`data: ${JSON.stringify({ type: 'delta', text: delta })}\n\n`);
+      } catch { ended = true; }
     });
 
     stream.on('error', (err) => {
       console.error('[chat] stream error:', err.message);
-      res.write(`data: ${JSON.stringify({ type: 'error', message: 'Stream error' })}\n\n`);
-      res.end();
+      finish({ type: 'error', message: 'Stream error' });
     });
 
     stream.on('end', async () => {
-      try {
-        if (full.trim()) {
+      // Persist the assistant reply only for a completed (non-aborted) stream.
+      if (!aborted && full.trim()) {
+        try {
           await ChatMessage.create({ user: userId, role: 'assistant', content: full });
+        } catch (e) {
+          console.error('[chat] save error:', e.message);
         }
-      } catch (e) {
-        console.error('[chat] save error:', e.message);
       }
-      res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
-      res.end();
+      finish({ type: 'done' });
     });
   } catch (err) { next(err); }
 };
