@@ -1,21 +1,9 @@
 const Habit = require('../models/Habit');
 const User = require('../models/User');
+const { startOfDay, startOfDayDaysAgo, localDateKey } = require('../utils/time');
 
 const XP_PER_CHECKIN = 10;
 const XP_PER_LEVEL = 100;
-
-function getUTCDateKey(date) {
-  const y = date.getUTCFullYear();
-  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const d = String(date.getUTCDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function isSameUTCDay(d1, d2) {
-  return d1.getUTCFullYear() === d2.getUTCFullYear() &&
-         d1.getUTCMonth() === d2.getUTCMonth() &&
-         d1.getUTCDate() === d2.getUTCDate();
-}
 
 exports.createHabit = async (req, res, next) => {
   try {
@@ -74,7 +62,8 @@ function resetFreezeIfDue(habit) {
 exports.checkIn = async (req, res, next) => {
   try {
     const now = new Date();
-    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const tz = req.user.timezone;
+    const today = startOfDay(now, tz);
 
     // Atomically claim today's check-in slot. The filter `lastCheckinDate != today`
     // matches at most once; the winning request gets the pre-update document
@@ -97,7 +86,7 @@ exports.checkIn = async (req, res, next) => {
     // Legacy-data guard: a habit created before lastCheckinDate existed could
     // have today's check-in already in the array. The claim set lastCheckinDate
     // (harmless), but don't double-add or double-award.
-    if (habit.checkins.some(c => isSameUTCDay(new Date(c.date), now))) {
+    if (habit.checkins.some(c => localDateKey(new Date(c.date), tz) === localDateKey(now, tz))) {
       return res.status(400).json({ message: 'Already checked in today' });
     }
 
@@ -110,7 +99,7 @@ exports.checkIn = async (req, res, next) => {
     let newStreak = 1;
     let freezeUsed = false;
     if (lastCheckin) {
-      const lastDay = new Date(Date.UTC(lastCheckin.getUTCFullYear(), lastCheckin.getUTCMonth(), lastCheckin.getUTCDate()));
+      const lastDay = startOfDay(lastCheckin, tz);
       const diffDays = Math.round((today - lastDay) / (1000 * 60 * 60 * 24));
       if (diffDays === 1) {
         newStreak = habit.streak + 1;
@@ -146,29 +135,30 @@ exports.weeklyAnalytics = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const now = new Date();
-    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    const startDate = new Date(today);
-    startDate.setUTCDate(today.getUTCDate() - 6);
+    const tz = req.user.timezone;
+
+    // The 7 local-day buckets ending today (local), oldest first. Generated with
+    // calendar stepping so a DST day can't drift the window.
+    const dayMap = {};
+    const order = [];
+    for (let days = 6; days >= 0; days--) {
+      const key = localDateKey(startOfDayDaysAgo(now, tz, days), tz);
+      dayMap[key] = 0;
+      order.push(key);
+    }
 
     const habits = await Habit.find({ user: userId, isActive: true });
 
-    const dayMap = {};
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(startDate);
-      d.setUTCDate(startDate.getUTCDate() + i);
-      dayMap[getUTCDateKey(d)] = 0;
-    }
-
     habits.forEach(habit => {
       habit.checkins.forEach(checkin => {
-        const key = getUTCDateKey(new Date(checkin.date));
+        const key = localDateKey(new Date(checkin.date), tz);
         if (dayMap[key] !== undefined) {
           dayMap[key]++;
         }
       });
     });
 
-    const result = Object.keys(dayMap).map(dateStr => {
+    const result = order.map(dateStr => {
       const [y, m, d] = dateStr.split('-').map(Number);
       const date = new Date(Date.UTC(y, m - 1, d));
       return {

@@ -6,7 +6,7 @@ const validate = require('../middlewares/validate');
 const {
   updateGoals, updateReminders,
   subscribePush, unsubscribePush, getVapidPublicKey,
-  updateEmailReminders, completeOnboarding,
+  updateEmailReminders, completeOnboarding, updateTimezone,
 } = require('../controllers/settingsController');
 const { getSuggestions } = require('../controllers/smartRemindersController');
 
@@ -38,5 +38,9 @@ router.put('/email-reminders', [
 ], validate, updateEmailReminders);
 
 router.put('/onboarding-complete', completeOnboarding);
+
+router.put('/timezone', [
+  body('timezone').isString().isLength({ min: 1, max: 64 }),
+], validate, updateTimezone);
 
 module.exports = router;

@@ -22,6 +22,8 @@ const app = require('../src/app');
 const User = require('../src/models/User');
 const Mood = require('../src/models/Mood');
 const Habit = require('../src/models/Habit');
+const Water = require('../src/models/Water');
+const { startOfDay } = require('../src/utils/time');
 const errorHandler = require('../src/middlewares/errorHandler');
 const { aiLimiter } = require('../src/middlewares/aiLimiter');
 
@@ -131,6 +133,26 @@ test('habit check-in awards XP once; a same-day repeat is rejected', async () =>
 
   const after = await User.findById(user._id);
   assert.equal(after.xp, 10, 'XP must not be awarded twice for the same day');
+});
+
+// ---- timezone endpoint validates + stores the zone ----
+test('PUT /settings/timezone validates and stores the IANA zone', async () => {
+  const { user, auth } = await makeUser();
+  const bad = await request(app).put('/api/settings/timezone').set('Authorization', auth).send({ timezone: 'Not/AZone' });
+  assert.equal(bad.status, 400);
+  const ok = await request(app).put('/api/settings/timezone').set('Authorization', auth).send({ timezone: 'Asia/Kolkata' });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.body.timezone, 'Asia/Kolkata');
+  assert.equal((await User.findById(user._id)).timezone, 'Asia/Kolkata');
+});
+
+// ---- logging is bucketed by the user's local day, not UTC ----
+test('water is bucketed by the user timezone (IST local midnight)', async () => {
+  const { auth } = await makeUser({ timezone: 'Asia/Kolkata' });
+  const res = await request(app).post('/api/water').set('Authorization', auth).send({ glasses: 1 });
+  assert.equal(res.status, 201);
+  const expected = startOfDay(new Date(), 'Asia/Kolkata');
+  assert.equal(new Date(res.body.date).getTime(), expected.getTime(), 'stored date must be the IST local midnight');
 });
 
 // ---- CSV export neutralizes spreadsheet formula injection ----

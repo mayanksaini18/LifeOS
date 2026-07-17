@@ -45,6 +45,7 @@ function setCookieAndRespond(res, user, accessToken, refreshToken) {
       reminderTimes: user.reminderTimes ?? { mood: '', sleep: '', water: '', exercise: '' },
       emailReminders: user.emailReminders ?? false,
       onboardingComplete: user.onboardingComplete ?? false,
+      timezone: user.timezone ?? 'UTC',
     }
   });
 }
@@ -281,5 +282,6 @@ exports.getMe = async (req, res) => {
     reminderTimes: req.user.reminderTimes ?? { mood: '', sleep: '', water: '', exercise: '' },
     emailReminders: req.user.emailReminders ?? false,
     onboardingComplete: req.user.onboardingComplete ?? false,
+    timezone: req.user.timezone ?? 'UTC',
   });
 };

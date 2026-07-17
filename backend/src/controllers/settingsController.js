@@ -1,5 +1,6 @@
 const webpush = require('web-push');
 const User = require('../models/User');
+const { isValidTimeZone } = require('../utils/time');
 
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
@@ -101,6 +102,19 @@ exports.unsubscribePush = async (req, res, next) => {
 
 exports.getVapidPublicKey = (req, res) => {
   res.json({ publicKey: process.env.VAPID_PUBLIC_KEY || '' });
+};
+
+exports.updateTimezone = async (req, res, next) => {
+  try {
+    const { timezone } = req.body;
+    if (!isValidTimeZone(timezone)) {
+      return res.status(400).json({ message: 'Invalid IANA timezone' });
+    }
+    const user = await User.findByIdAndUpdate(
+      req.user._id, { $set: { timezone } }, { new: true }
+    );
+    res.json({ timezone: user.timezone });
+  } catch (err) { next(err); }
 };
 
 exports.updateEmailReminders = async (req, res, next) => {

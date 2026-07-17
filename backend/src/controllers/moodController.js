@@ -1,13 +1,10 @@
 const Mood = require('../models/Mood');
-
-function getUTCStartOfDay(date) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-}
+const { startOfDay, startOfDayDaysAgo } = require('../utils/time');
 
 exports.logMood = async (req, res, next) => {
   try {
     const { score, energy, notes, tags } = req.body;
-    const today = getUTCStartOfDay(new Date());
+    const today = startOfDay(new Date(), req.user.timezone);
 
     const mood = await Mood.findOneAndUpdate(
       { user: req.user._id, date: today },
@@ -39,9 +36,7 @@ exports.getMoods = async (req, res, next) => {
 
 exports.getMoodTrends = async (req, res, next) => {
   try {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now);
-    thirtyDaysAgo.setUTCDate(now.getUTCDate() - 30);
+    const thirtyDaysAgo = startOfDayDaysAgo(new Date(), req.user.timezone, 30);
 
     const moods = await Mood.find({
       user: req.user._id,

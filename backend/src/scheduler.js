@@ -6,6 +6,7 @@ const Sleep = require('./models/Sleep');
 const Water = require('./models/Water');
 const Fitness = require('./models/Fitness');
 const { sendReminder: sendEmailReminder, isEnabled: isEmailEnabled } = require('./services/email');
+const { startOfDay, localHM } = require('./utils/time');
 
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
@@ -13,10 +14,6 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     process.env.VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY
   );
-}
-
-function getUTCStartOfDay(date) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 }
 
 async function sendPush(subscription, payload) {
@@ -30,8 +27,6 @@ async function sendPush(subscription, payload) {
 
 async function processReminders() {
   const now = new Date();
-  const currentHHMM = `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`;
-  const todayStart = getUTCStartOfDay(now);
 
   // Include any user who could receive a reminder — push subscribers or email opt-ins
   const users = await User.find({
@@ -42,6 +37,11 @@ async function processReminders() {
   });
 
   for (const user of users) {
+    // Match the reminder time against the user's LOCAL clock, and check "already
+    // logged today" against the user's LOCAL day — so a "20:00" reminder fires
+    // at 8pm in their timezone, not at 20:00 UTC.
+    const currentHHMM = localHM(now, user.timezone);
+    const todayStart = startOfDay(now, user.timezone);
     const rt = user.reminderTimes || {};
     const modules = ['mood', 'sleep', 'water', 'exercise'];
     const expiredEndpoints = [];
