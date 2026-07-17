@@ -30,7 +30,7 @@ export function VerifyClient() {
       try {
         const res = await fetch(
           `${API_URL}/auth/verify-email?token=${encodeURIComponent(token)}`,
-          { method: "GET" }
+          { method: "GET", headers: { Accept: "application/json" } }
         );
         const body = await res.json().catch(() => ({}));
         if (res.ok) {

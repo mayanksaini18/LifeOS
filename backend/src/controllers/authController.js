@@ -61,7 +61,7 @@ exports.register = async (req, res, next) => {
     const user = await User.create({ name, email, password: hashed, emailVerified: false });
 
     const rawToken = await issueVerificationToken(user);
-    const verifyUrl = `${req.protocol}://${req.get('host')}/api/auth/verify-email?token=${rawToken}`;
+    const verifyUrl = `${APP_URL}/verify?token=${rawToken}`;
     const result = await sendVerificationEmail({ to: email, url: verifyUrl, name });
     console.log(`[auth/register] verification send result for ${email}:`, result);
 
@@ -183,9 +183,17 @@ exports.phoneLogin = async (req, res, next) => {
 };
 
 exports.verifyEmail = async (req, res, next) => {
+  // The email link now points at the frontend /verify page, which fetches this
+  // endpoint with `Accept: application/json` and shows a branded result. Old
+  // links (and any direct browser hit) still get a redirect to the login page.
+  const wantsJson = (req.get('accept') || '').includes('application/json');
+  const fail = (reason, message) =>
+    wantsJson
+      ? res.status(400).json({ message })
+      : res.redirect(`${APP_URL}/login?verified=0&reason=${reason}`);
   try {
     const token = (req.query.token || '').toString();
-    if (!token) return res.redirect(`${APP_URL}/login?verified=0&reason=missing`);
+    if (!token) return fail('missing', 'Missing verification token.');
 
     const user = await User.findOne({
       emailVerificationTokenHash: hashToken(token),
@@ -193,7 +201,7 @@ exports.verifyEmail = async (req, res, next) => {
     });
 
     if (!user) {
-      return res.redirect(`${APP_URL}/login?verified=0&reason=expired`);
+      return fail('expired', 'This verification link is invalid or has expired.');
     }
 
     user.emailVerified = true;
@@ -201,6 +209,9 @@ exports.verifyEmail = async (req, res, next) => {
     user.emailVerificationExpiresAt = undefined;
     await user.save();
 
+    if (wantsJson) {
+      return res.json({ ok: true, message: 'Email verified. You can now sign in.' });
+    }
     res.redirect(`${APP_URL}/login?verified=1`);
   } catch (err) { next(err); }
 };
@@ -212,7 +223,7 @@ exports.resendVerification = async (req, res, next) => {
 
     if (user && !user.emailVerified) {
       const rawToken = await issueVerificationToken(user);
-      const verifyUrl = `${req.protocol}://${req.get('host')}/api/auth/verify-email?token=${rawToken}`;
+      const verifyUrl = `${APP_URL}/verify?token=${rawToken}`;
       const result = await sendVerificationEmail({ to: user.email, url: verifyUrl, name: user.name });
       console.log(`[auth/resend] verification send result for ${user.email}:`, result);
     }
