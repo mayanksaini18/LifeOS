@@ -21,7 +21,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { useUpdateHabit } from "@/hooks/use-habits";
+import { useUpdateHabit, useDeleteHabit } from "@/hooks/use-habits";
 import { toast } from "sonner";
 import type { Habit } from "@/types/habit";
 
@@ -38,6 +38,7 @@ export function HabitCard({ habit, onCheckin, pending = false }: HabitCardProps)
   const [description, setDescription] = useState(habit.description ?? "");
   const [frequency, setFrequency] = useState(habit.frequency);
   const updateHabit = useUpdateHabit();
+  const deleteHabit = useDeleteHabit();
 
   const hasCheckedToday = (habit.checkins || []).some((c) => {
     try {
@@ -79,6 +80,17 @@ export function HabitCard({ habit, onCheckin, pending = false }: HabitCardProps)
       setEditOpen(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update habit");
+    }
+  }
+
+  async function handleDelete() {
+    if (!window.confirm(`Delete "${habit.title}"? This removes its history and can't be undone.`)) return;
+    try {
+      await deleteHabit.mutateAsync(habit._id);
+      toast.success("Habit deleted");
+      setEditOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete habit");
     }
   }
 
@@ -192,17 +204,28 @@ export function HabitCard({ habit, onCheckin, pending = false }: HabitCardProps)
                 </SelectContent>
               </Select>
             </div>
-            <DialogFooter>
+            <DialogFooter className="sm:justify-between">
               <Button
                 type="button"
-                variant="outline"
-                onClick={() => setEditOpen(false)}
+                variant="ghost"
+                onClick={handleDelete}
+                disabled={deleteHabit.isPending}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
               >
-                Cancel
+                {deleteHabit.isPending ? "Deleting..." : "Delete"}
               </Button>
-              <Button type="submit" disabled={updateHabit.isPending}>
-                {updateHabit.isPending ? "Saving..." : "Save"}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={updateHabit.isPending}>
+                  {updateHabit.isPending ? "Saving..." : "Save"}
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         </DialogContent>
