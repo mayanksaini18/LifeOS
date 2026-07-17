@@ -249,6 +249,20 @@
   }
 }
 
+/* Editorial type roles. Used across the landing sections; defined once so the
+   voice stays consistent and a change lands everywhere. */
+@layer components {
+  .label-mono {
+    @apply font-mono text-[10px] uppercase tracking-widest text-muted-foreground;
+  }
+  .display-heading {
+    @apply font-heading font-light tracking-[-0.02em];
+  }
+  .pill-cta {
+    @apply rounded-full font-mono text-[10px] uppercase tracking-widest;
+  }
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
