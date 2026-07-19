@@ -4,7 +4,7 @@ import {
   AiChat01Icon,
 } from "hugeicons-react";
 import { Section } from "@/components/landing/section";
-import { Reveal } from "@/components/landing/reveal";
+import { MaskReveal } from "@/components/motion/mask-reveal";
 
 /** Deterministic weekly bar heights (% of the track), SSR-stable. */
 const BARS: { height: number; day: string; highlight?: boolean }[] = [
@@ -40,7 +40,7 @@ export function InsightsSection() {
     <Section id="insights">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         {/* Left — product mock */}
-        <Reveal>
+        <MaskReveal>
           <div className="rounded-2xl border bg-card p-5 shadow-sm">
             {/* Header row */}
             <div className="flex items-center gap-3">
@@ -103,14 +103,12 @@ export function InsightsSection() {
               </div>
             </div>
           </div>
-        </Reveal>
+        </MaskReveal>
 
         {/* Right — copy */}
-        <Reveal delay={80}>
-          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Insights &amp; AI
-          </p>
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight leading-[1.15]">
+        <MaskReveal delay={80}>
+          <p className="label-mono mb-3">Insights &amp; AI</p>
+          <h2 className="display-heading text-3xl leading-[1.15] md:text-4xl">
             Your data, gently understood.
           </h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
@@ -137,7 +135,7 @@ export function InsightsSection() {
               );
             })}
           </div>
-        </Reveal>
+        </MaskReveal>
       </div>
     </Section>
   );

@@ -5,19 +5,19 @@ import {
   Target01Icon,
 } from "hugeicons-react";
 import { Section, SectionHeading } from "@/components/landing/section";
-import { Reveal } from "@/components/landing/reveal";
+import { MaskReveal } from "@/components/motion/mask-reveal";
 
 /**
- * Emerald intensity ramp for the habit heatmap. Written as full literal
- * class strings so Tailwind keeps them — accents stay at low opacity, with
- * empty days falling back to the neutral `bg-muted` token.
+ * Habits-module intensity ramp for the habit heatmap, mirroring the emerald
+ * ramp used by the real `HabitHeatmap` dashboard component — accents stay at
+ * low opacity, with empty days falling back to the neutral `bg-muted` token.
  */
 const HEATMAP_INTENSITY = [
   "bg-muted",
-  "bg-emerald-500/25",
-  "bg-emerald-500/45",
-  "bg-emerald-500/70",
-  "bg-emerald-500",
+  "bg-module-habits/25",
+  "bg-module-habits/45",
+  "bg-module-habits/70",
+  "bg-module-habits",
 ] as const;
 
 const HEATMAP_ROWS = 7; // days of the week
@@ -61,11 +61,11 @@ export function GamificationSection() {
         subtitle="Small wins, gently rewarded. Streaks, levels, and light weekly challenges keep you coming back."
       />
 
-      <Reveal className="mt-14 md:mt-16">
+      <MaskReveal className="mt-14 md:mt-16">
         <div className="rounded-2xl border bg-card p-6 md:p-8">
           {/* Habit heatmap — full width */}
           <div className="flex flex-wrap items-center gap-2">
-            <CheckmarkCircle01Icon className="h-4 w-4 text-emerald-500" />
+            <CheckmarkCircle01Icon className="h-4 w-4 text-module-habits" />
             <span className="text-sm font-medium">Habit consistency</span>
             <span className="text-xs text-muted-foreground">
               last 12 months
@@ -103,7 +103,7 @@ export function GamificationSection() {
             <div className="flex flex-col rounded-xl border p-4">
               <div className="flex items-center gap-2">
                 <Fire02Icon className="h-5 w-5 text-orange-500" />
-                <span className="text-xs text-muted-foreground">Streak</span>
+                <span className="label-mono">Streak</span>
               </div>
               <p className="mt-2 text-lg font-semibold tracking-tight">
                 12-day streak
@@ -117,7 +117,7 @@ export function GamificationSection() {
             <div className="flex flex-col rounded-xl border p-4">
               <div className="flex items-center gap-2">
                 <Award01Icon className="h-5 w-5 text-amber-500" />
-                <span className="text-xs text-muted-foreground">Level</span>
+                <span className="label-mono">Level</span>
               </div>
               <p className="mt-2 text-lg font-semibold tracking-tight">Level 4</p>
               <div className="mt-auto pt-3">
@@ -137,7 +137,7 @@ export function GamificationSection() {
             <div className="flex flex-col rounded-xl border p-4">
               <div className="flex items-center gap-2">
                 <Target01Icon className="h-5 w-5 text-emerald-500" />
-                <span className="text-xs text-muted-foreground">This week</span>
+                <span className="label-mono">This week</span>
               </div>
               <div className="mt-3 space-y-3">
                 {CHALLENGES.map((c) => {
@@ -163,7 +163,7 @@ export function GamificationSection() {
             </div>
           </div>
         </div>
-      </Reveal>
+      </MaskReveal>
     </Section>
   );
 }

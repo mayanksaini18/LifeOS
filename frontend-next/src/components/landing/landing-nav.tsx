@@ -61,7 +61,7 @@ export function LandingNav() {
             nativeButton={false}
             variant="ghost"
             size="sm"
-            className="hidden sm:inline-flex"
+            className="hidden rounded-full font-mono text-[10px] uppercase tracking-widest sm:inline-flex"
           >
             Sign in
           </Button>
@@ -69,6 +69,7 @@ export function LandingNav() {
             render={<Link href="/register" />}
             nativeButton={false}
             size="sm"
+            className="rounded-full font-mono text-[10px] uppercase tracking-widest"
           >
             Get started
           </Button>

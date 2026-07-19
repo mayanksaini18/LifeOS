@@ -62,7 +62,7 @@ export function LandingFooter() {
           <div className="grid grid-cols-3 gap-8 sm:gap-12 md:gap-16">
             {FOOTER_COLUMNS.map((column) => (
               <div key={column.heading}>
-                <p className="text-sm font-medium">{column.heading}</p>
+                <p className="label-mono">{column.heading}</p>
                 <ul className="mt-3 space-y-2">
                   {column.links.map((link) => (
                     <li key={link.label}>
@@ -82,10 +82,8 @@ export function LandingFooter() {
 
         {/* Bottom bar */}
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border pt-6">
-          <p className="text-xs text-muted-foreground">© {year} LifeOS</p>
-          <p className="text-xs text-muted-foreground">
-            Made for your well-being.
-          </p>
+          <p className="label-mono">© {year} LifeOS</p>
+          <p className="label-mono">Made for your well-being.</p>
         </div>
       </div>
     </footer>

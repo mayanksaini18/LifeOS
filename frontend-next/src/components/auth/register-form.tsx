@@ -64,7 +64,7 @@ export function RegisterForm() {
   if (sentTo) {
     return (
       <div className="w-full max-w-sm space-y-6">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-500">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-success/15 text-success">
           <Mail01Icon className="h-6 w-6" />
         </div>
         <div>

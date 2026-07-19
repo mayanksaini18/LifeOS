@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight01Icon } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import { Section } from "@/components/landing/section";
-import { Reveal } from "@/components/landing/reveal";
+import { MaskReveal } from "@/components/motion/mask-reveal";
 
 /**
  * FinalCta — the closing call-to-action. An inverted band
@@ -12,13 +12,13 @@ import { Reveal } from "@/components/landing/reveal";
 export function FinalCta() {
   return (
     <Section>
-      <Reveal>
+      <MaskReveal>
         <div className="rounded-3xl bg-foreground px-6 py-16 text-center text-background md:px-12 md:py-20">
           <div className="mx-auto max-w-xl">
-            <p className="mb-4 text-xs font-medium uppercase tracking-widest text-background/60">
+            <p className="label-mono mb-4 text-background/60">
               Start today
             </p>
-            <h2 className="text-3xl md:text-4xl font-semibold tracking-tight leading-[1.15]">
+            <h2 className="display-heading text-3xl leading-[1.15] md:text-4xl">
               Start taking care of yourself today.
             </h2>
             <p className="mt-4 text-background/70 leading-relaxed">
@@ -47,7 +47,7 @@ export function FinalCta() {
             </p>
           </div>
         </div>
-      </Reveal>
+      </MaskReveal>
     </Section>
   );
 }
