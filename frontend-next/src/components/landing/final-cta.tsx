@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight01Icon } from "hugeicons-react";
-import { Button } from "@/components/ui/button";
 import { Section } from "@/components/landing/section";
 import { MaskReveal } from "@/components/motion/mask-reveal";
 
@@ -26,14 +25,21 @@ export function FinalCta() {
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-              <Button
-                render={<Link href="/register" />}
-                nativeButton={false}
-                className="h-11 px-6 bg-background text-foreground hover:bg-muted"
+              {/*
+               * A plain styled <Link>, not the shared <Button> primitive — same
+               * reason as the hero: Base UI's Button (nativeButton={false})
+               * forces role="button" on a link, and its default variant injects
+               * `[a]:hover:bg-primary/80`, which — because this button renders as
+               * an anchor — outranks a plain `hover:` class and turned the button
+               * near-black (invisible on this dark band) on hover.
+               */}
+              <Link
+                href="/register"
+                className="inline-flex h-11 items-center justify-center rounded-lg px-6 text-sm font-medium bg-background text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background/60"
               >
                 Create your account
                 <ArrowRight01Icon className="ml-2 h-4 w-4" />
-              </Button>
+              </Link>
               <Link
                 href="/login"
                 className="inline-flex h-11 items-center justify-center rounded-lg px-6 text-sm font-medium text-background/80 hover:text-background hover:bg-background/10 transition-colors"
