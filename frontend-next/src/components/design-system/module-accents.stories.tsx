@@ -29,6 +29,10 @@ type Story = StoryObj<typeof meta>;
  */
 export const AccentsResolveToTokens: Story = {
   play: async ({ canvas }) => {
+    // These are the light-theme token values; a prior story in the shared
+    // browser context may have left `.dark` on the root, so pin light mode for
+    // a deterministic assertion.
+    document.documentElement.classList.remove('dark');
     const expected: Record<string, string> = {
       mood: 'rgb(141, 132, 179)',
       sleep: 'rgb(95, 135, 166)',
