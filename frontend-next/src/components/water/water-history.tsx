@@ -4,13 +4,14 @@ import { useWaterHistory } from "@/hooks/use-water";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip } from "chart.js";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useChartScaleColors, CHART_COLORS } from "@/lib/chart-theme";
+import { useChartScaleColors, useModuleChartColors } from "@/lib/chart-theme";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
 export function WaterHistory() {
   const { data: entries, isLoading } = useWaterHistory(14);
   const scale = useChartScaleColors();
+  const C = useModuleChartColors().water;
 
   if (isLoading) return <Skeleton className="h-52 w-full rounded-xl" />;
 
@@ -39,9 +40,9 @@ export function WaterHistory() {
             label: "Glasses",
             data: sorted.map((e) => e.glasses),
             backgroundColor: sorted.map((e) =>
-              e.glasses >= e.goal ? CHART_COLORS.water.barGoal : CHART_COLORS.water.bar
+              e.glasses >= e.goal ? C.barGoal : C.bar
             ),
-            hoverBackgroundColor: CHART_COLORS.water.barHover,
+            hoverBackgroundColor: C.barHover,
             borderRadius: 4,
           }],
         }}

@@ -107,7 +107,7 @@ export function HabitHeatmap({ habit }: Props) {
                     title={cell.dateKey}
                     className={`aspect-square rounded-sm transition-colors ${
                       cell.checked
-                        ? "bg-emerald-500"
+                        ? "bg-module-habits"
                         : cell.isToday
                         ? "bg-muted-foreground/20 ring-1 ring-muted-foreground/40"
                         : "bg-muted"
@@ -124,8 +124,8 @@ export function HabitHeatmap({ habit }: Props) {
       <div className="flex items-center gap-1.5 justify-end">
         <span className="text-[10px] text-muted-foreground">Less</span>
         <div className="w-2.5 h-2.5 rounded-sm bg-muted" />
-        <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500/40" />
-        <div className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
+        <div className="w-2.5 h-2.5 rounded-sm bg-module-habits/40" />
+        <div className="w-2.5 h-2.5 rounded-sm bg-module-habits" />
         <span className="text-[10px] text-muted-foreground">More</span>
       </div>
     </div>

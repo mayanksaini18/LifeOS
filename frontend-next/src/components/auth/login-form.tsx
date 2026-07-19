@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { fetchApi, ApiError } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 import { GoogleLogin } from "@/components/auth/google-login";
+import { VerifiedBanner } from "@/components/auth/verified-banner";
 import type { AuthResponse } from "@/types/user";
 import { ArrowLeft01Icon } from "hugeicons-react";
 
@@ -88,11 +89,7 @@ export function LoginForm() {
         </p>
       </div>
 
-      {verified === "1" && (
-        <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/8 px-4 py-3">
-          <p className="text-sm text-foreground">Email verified. Sign in to continue.</p>
-        </div>
-      )}
+      {verified === "1" && <VerifiedBanner />}
 
       {verified === "0" && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/8 px-4 py-3">
@@ -111,7 +108,7 @@ export function LoginForm() {
       )}
 
       {needsVerification && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/8 px-4 py-3 space-y-2">
+        <div className="rounded-lg border border-warning/30 bg-warning/8 px-4 py-3 space-y-2">
           <p className="text-sm text-foreground">
             Please verify your email to continue. We sent a link to{" "}
             <span className="font-medium">{needsVerification}</span>.

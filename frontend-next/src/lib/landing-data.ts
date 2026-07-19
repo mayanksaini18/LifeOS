@@ -15,10 +15,9 @@ export type IconType = ComponentType<{
 }>;
 
 /**
- * Landing modules — the canonical accent-color system for the marketing page.
- * Tailwind can't derive class names from variables, so every accent is written
- * as a full literal string (matching the pattern used on the dashboard and the
- * original welcome hero). Structural accents (tiles, borders) stay at /10–/20;
+ * Landing modules — the canonical accent system for the marketing page.
+ * Accents reference the `--color-module-*` tokens in globals.css, so a retune
+ * happens in one place. Structural accents (tiles, borders) stay at /10–/20;
  * the solid `bar` token is reserved for tiny data-viz marks (meters/sparklines),
  * mirroring the dashboard's colored GoalBar.
  */
@@ -28,13 +27,13 @@ export interface LandingModule {
   icon: IconType;
   label: string;
   blurb: string;
-  /** e.g. "text-violet-500" */
+  /** e.g. "text-module-mood" */
   iconColor: string;
-  /** e.g. "bg-violet-500/10" — the icon tile fill */
+  /** e.g. "bg-module-mood/10" — the icon tile fill */
   iconBg: string;
-  /** e.g. "border-violet-500/20" */
+  /** e.g. "border-module-mood/20" */
   ring: string;
-  /** e.g. "bg-violet-500" — solid accent for tiny meters/sparklines */
+  /** e.g. "bg-module-mood" — solid accent for tiny meters/sparklines */
   bar: string;
 }
 
@@ -45,10 +44,10 @@ export const LANDING_MODULES: LandingModule[] = [
     icon: SmileIcon,
     label: "Mood",
     blurb: "Notice how you feel and spot what quietly lifts you.",
-    iconColor: "text-violet-500",
-    iconBg: "bg-violet-500/10",
-    ring: "border-violet-500/20",
-    bar: "bg-violet-500",
+    iconColor: "text-module-mood",
+    iconBg: "bg-module-mood/10",
+    ring: "border-module-mood/20",
+    bar: "bg-module-mood",
   },
   {
     key: "sleep",
@@ -56,10 +55,10 @@ export const LANDING_MODULES: LandingModule[] = [
     icon: Moon02Icon,
     label: "Sleep",
     blurb: "Track your rest and wake up to gentle, honest trends.",
-    iconColor: "text-sky-500",
-    iconBg: "bg-sky-500/10",
-    ring: "border-sky-500/20",
-    bar: "bg-sky-500",
+    iconColor: "text-module-sleep",
+    iconBg: "bg-module-sleep/10",
+    ring: "border-module-sleep/20",
+    bar: "bg-module-sleep",
   },
   {
     key: "water",
@@ -67,10 +66,10 @@ export const LANDING_MODULES: LandingModule[] = [
     icon: DropletIcon,
     label: "Water",
     blurb: "Stay hydrated with a single tap — one glass at a time.",
-    iconColor: "text-cyan-500",
-    iconBg: "bg-cyan-500/10",
-    ring: "border-cyan-500/20",
-    bar: "bg-cyan-500",
+    iconColor: "text-module-water",
+    iconBg: "bg-module-water/10",
+    ring: "border-module-water/20",
+    bar: "bg-module-water",
   },
   {
     key: "habits",
@@ -78,10 +77,10 @@ export const LANDING_MODULES: LandingModule[] = [
     icon: CheckListIcon,
     label: "Habits",
     blurb: "Build small routines that quietly add up over time.",
-    iconColor: "text-emerald-500",
-    iconBg: "bg-emerald-500/10",
-    ring: "border-emerald-500/20",
-    bar: "bg-emerald-500",
+    iconColor: "text-module-habits",
+    iconBg: "bg-module-habits/10",
+    ring: "border-module-habits/20",
+    bar: "bg-module-habits",
   },
   {
     key: "fitness",
@@ -89,10 +88,10 @@ export const LANDING_MODULES: LandingModule[] = [
     icon: Dumbbell01Icon,
     label: "Fitness",
     blurb: "Log movement and celebrate every active day.",
-    iconColor: "text-orange-500",
-    iconBg: "bg-orange-500/10",
-    ring: "border-orange-500/20",
-    bar: "bg-orange-500",
+    iconColor: "text-module-fitness",
+    iconBg: "bg-module-fitness/10",
+    ring: "border-module-fitness/20",
+    bar: "bg-module-fitness",
   },
   {
     key: "insights",
