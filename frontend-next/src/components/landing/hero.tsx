@@ -22,7 +22,7 @@ const HERO_ROTATING_WORDS = ["yourself", "your sleep", "your mood", "your habits
  */
 export function Hero() {
   return (
-    <section className="relative flex min-h-[calc(100vh-4rem)] items-start overflow-hidden pt-16 pb-20 md:pt-24">
+    <section className="relative flex min-h-[calc(100vh-4rem)] items-center overflow-hidden pt-28 pb-20 md:pt-32">
       <div className="mx-auto w-full max-w-7xl px-6 md:px-16">
         <p className="mb-8 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
           LifeOS · Daily wellness
