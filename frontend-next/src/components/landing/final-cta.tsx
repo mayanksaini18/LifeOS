@@ -29,7 +29,7 @@ export function FinalCta() {
               <Button
                 render={<Link href="/register" />}
                 nativeButton={false}
-                className="h-11 px-6 bg-background text-foreground hover:bg-background/90"
+                className="h-11 px-6 bg-background text-foreground hover:bg-muted"
               >
                 Create your account
                 <ArrowRight01Icon className="ml-2 h-4 w-4" />
