@@ -17,7 +17,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-const REQUIRED_STATIC_ROUTES = ["/welcome"];
+const REQUIRED_STATIC_ROUTES = ["/welcome", "/privacy", "/terms"];
 
 const manifestPath = path.join(process.cwd(), ".next", "prerender-manifest.json");
 

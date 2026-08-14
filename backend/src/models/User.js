@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   name: { type: String, maxlength: 50 },
   email: { type: String, unique: true, sparse: true, lowercase: true },
+  // Legacy: phone sign-in has been removed, so nothing sets these any more.
+  // They stay so pre-existing phone-only documents keep validating on save.
   phone: { type: String, unique: true, sparse: true },
-  // Password is required only for accounts without a phone (email/Google
-  // accounts). Phone accounts authenticate via Firebase and have no password.
   password: { type: String, required: function () { return !this.phone; } },
   xp: { type: Number, default: 0 },
   level: { type: Number, default: 1 },
@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema({
   onboardingComplete: { type: Boolean, default: false },
   emailVerificationTokenHash: { type: String, index: true },
   emailVerificationExpiresAt: { type: Date },
+  // Same shape as the verification pair above, but a much shorter TTL: a reset
+  // link can take over the account, a verification link only confirms it.
+  passwordResetTokenHash: { type: String, index: true },
+  passwordResetExpiresAt: { type: Date },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

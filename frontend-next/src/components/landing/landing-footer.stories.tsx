@@ -40,18 +40,39 @@ export const HeadingsAndBottomBarUseLabelMono: Story = {
  * Behavioral fact the diff didn't touch but is cheap to lock down while
  * adding this file: each footer column renders the correct hrefs, in the
  * correct column, not just the correct link text.
+ *
+ * The Product anchors are absolute (`/welcome#modules`, not `#modules`)
+ * because this footer also renders on /privacy and /terms, where those
+ * sections don't exist and a bare hash would just jump to the top.
  */
 export const LinkColumnsHaveCorrectHrefs: Story = {
   play: async ({ canvas }) => {
     const expectations: [string, string][] = [
-      ['Features', '#modules'],
-      ['How it works', '#how'],
-      ['Insights', '#insights'],
+      ['Features', '/welcome#modules'],
+      ['How it works', '/welcome#how'],
+      ['Insights', '/welcome#insights'],
       ['Sign in', '/login'],
       ['Create account', '/register'],
+      ['Privacy', '/privacy'],
+      ['Terms', '/terms'],
     ];
     for (const [label, href] of expectations) {
       await expect(canvas.getByRole('link', { name: label })).toHaveAttribute('href', href);
+    }
+  },
+};
+
+/**
+ * The Legal column shipped for months as two `href="#"` placeholders that
+ * silently jumped to the top of the page. Assert they point at real routes so
+ * a future edit can't quietly regress them back to dead links.
+ */
+export const LegalLinksAreNotPlaceholders: Story = {
+  play: async ({ canvas }) => {
+    for (const label of ['Privacy', 'Terms']) {
+      const href = canvas.getByRole('link', { name: label }).getAttribute('href');
+      await expect(href).not.toBe('#');
+      await expect(href).toMatch(/^\/\w/);
     }
   },
 };

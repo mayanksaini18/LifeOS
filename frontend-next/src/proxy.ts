@@ -1,7 +1,20 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/welcome", "/login", "/register", "/phone-login"];
+// Signed-out only: an already-authenticated visitor is sent to the dashboard
+// rather than shown a landing or sign-in page again.
+const GUEST_PATHS = [
+  "/welcome",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+];
+
+// Readable by anyone, signed in or not. These must NOT live in GUEST_PATHS —
+// bouncing a logged-in user to the dashboard for clicking "Privacy" in the
+// footer would make the legal pages unreachable from inside the app.
+const OPEN_PATHS = ["/privacy", "/terms"];
 
 function isTokenValid(tokenValue: string): boolean {
   try {
@@ -25,10 +38,13 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = request.cookies.get("access_token");
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+  if (OPEN_PATHS.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
+  }
 
-  if (isPublic) {
+  const token = request.cookies.get("access_token");
+
+  if (GUEST_PATHS.some((p) => pathname.startsWith(p))) {
     // Only redirect authenticated users away from auth pages if token is valid
     if (token && isTokenValid(token.value)) {
       return NextResponse.redirect(new URL("/", request.url));

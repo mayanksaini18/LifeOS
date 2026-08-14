@@ -7,14 +7,14 @@ import { VerifiedBanner } from './verified-banner';
  * `login-form.tsx` renders for `?verified=1`), plus a reference swatch used
  * to prove *which* token the banner resolves to.
  *
- * We can't mount `LoginForm` itself here: it imports `GoogleLogin`, which
- * calls Firebase's `getAuth()` at module load and throws `auth/invalid-api-key`
- * in the Storybook test environment (no Firebase env vars configured for
- * tests). That's an unrelated import-time failure, not a router-mock problem.
- * `VerifiedBanner` was extracted into its own file specifically so it has no
- * Firebase import in its module graph and can be mounted directly here — so a
- * regression to the banner's className in production code (e.g. reverting
- * `border-success/30` back to `border-emerald-500/30`) is caught by this test.
+ * `VerifiedBanner` was extracted into its own file so it can be mounted
+ * directly here — so a regression to the banner's className in production code
+ * (e.g. reverting `border-success/30` back to `border-emerald-500/30`) is
+ * caught by this test. Mounting `LoginForm` itself used to be impossible
+ * because `GoogleLogin` -> `@/lib/firebase` threw `auth/invalid-api-key` at
+ * module load with no Firebase env vars; `lib/firebase.ts` now degrades
+ * instead, so that constraint is gone even though this narrower mount is still
+ * the better test for a single className.
  *
  * Tailwind v4's opacity modifier (`/30`) resolves via `color-mix(in oklab, ...)`,
  * so `getComputedStyle` returns an `oklab(...)` string here, not `rgb(...)`.

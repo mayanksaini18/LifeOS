@@ -14,10 +14,12 @@ interface FooterColumn {
 const FOOTER_COLUMNS: FooterColumn[] = [
   {
     heading: "Product",
+    // Absolute rather than bare "#modules" anchors: this footer also renders
+    // on /privacy and /terms, where those sections don't exist.
     links: [
-      { href: "#modules", label: "Features" },
-      { href: "#how", label: "How it works" },
-      { href: "#insights", label: "Insights" },
+      { href: "/welcome#modules", label: "Features" },
+      { href: "/welcome#how", label: "How it works" },
+      { href: "/welcome#insights", label: "Insights" },
     ],
   },
   {
@@ -30,8 +32,8 @@ const FOOTER_COLUMNS: FooterColumn[] = [
   {
     heading: "Legal",
     links: [
-      { href: "#", label: "Privacy" },
-      { href: "#", label: "Terms" },
+      { href: "/privacy", label: "Privacy" },
+      { href: "/terms", label: "Terms" },
     ],
   },
 ];
@@ -53,7 +55,7 @@ export function LandingFooter() {
               </span>
             </div>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground leading-relaxed">
-              A calmer way to take care of yourself — habits, mood, sleep, and
+              A calmer way to take care of yourself. Habits, mood, sleep, and
               more, gently in one place.
             </p>
           </div>

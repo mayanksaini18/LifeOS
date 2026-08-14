@@ -22,7 +22,7 @@ const errorHandler = require('./middlewares/errorHandler');
 // verifies each ID token's signature against Google's public certs and checks
 // the `aud`/`iss` claims against this project. It MUST match the Firebase
 // project the frontend mints tokens for (currently `lifeos-f9dc4`) — if it
-// doesn't, every Google and phone sign-in is rejected with a generic 401.
+// doesn't, every Google sign-in is rejected with a generic 401.
 // Set FIREBASE_PROJECT_ID on the server to override the fallback.
 const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'lifeos-f9dc4';
 if (!process.env.FIREBASE_PROJECT_ID) {

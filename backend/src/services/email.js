@@ -96,4 +96,32 @@ async function sendVerificationEmail({ to, url, name }) {
   }
 }
 
-module.exports = { sendReminder, sendVerificationEmail, isEnabled };
+async function sendPasswordResetEmail({ to, url, name }) {
+  if (!resend) return { skipped: 'no-api-key' };
+
+  const firstName = (name || '').trim().split(' ')[0] || 'there';
+
+  try {
+    const result = await resend.emails.send({
+      from: FROM,
+      to,
+      subject: 'Reset your LifeOS password',
+      html: wrap({
+        preheader: 'Use this link to choose a new LifeOS password.',
+        title: 'Reset your password',
+        body: `Hey ${firstName}, tap the button below to choose a new password. This link expires in 1 hour and can only be used once.`,
+        ctaLabel: 'Reset password',
+        ctaUrl: url,
+        // The default footer points at reminder preferences, which is both
+        // wrong and alarming here — this is a security email, not a reminder.
+        footer: `If you didn't request a password reset, you can ignore this message and your password will stay as it is.`,
+      }),
+    });
+    return { ok: true, id: result.data?.id };
+  } catch (err) {
+    console.error(`[email] password reset failed for ${to}:`, err.message);
+    return { error: err.message };
+  }
+}
+
+module.exports = { sendReminder, sendVerificationEmail, sendPasswordResetEmail, isEnabled };

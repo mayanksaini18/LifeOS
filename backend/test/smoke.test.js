@@ -219,6 +219,100 @@ test('GET /auth/verify-email redirects a direct browser hit (no json Accept)', a
   assert.match(res.headers.location, /verified=0/);
 });
 
+// ---- password reset ----
+// RESEND_API_KEY is unset here, so sendPasswordResetEmail short-circuits to
+// { skipped } and no mail is attempted; the token still lands on the user.
+const bcryptLib = require('bcryptjs');
+
+async function makeResettableUser(overrides = {}) {
+  const raw = `reset-token-${Math.round(Math.random() * 1e9)}`;
+  const user = await User.create({
+    name: 'Reset', email: `r${Math.round(Math.random() * 1e9)}@x.com`,
+    password: await bcryptLib.hash('old-password', 10),
+    emailVerified: true,
+    passwordResetTokenHash: sha256(raw),
+    passwordResetExpiresAt: new Date(Date.now() + 3600e3),
+    ...overrides,
+  });
+  return { user, raw };
+}
+
+test('POST /auth/reset-password sets the new password and rejects the old one', async () => {
+  const { user, raw } = await makeResettableUser();
+
+  const res = await request(app).post('/api/auth/reset-password').send({ token: raw, password: 'new-password' });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.ok, true);
+
+  const fresh = await User.findById(user._id);
+  assert.ok(await bcryptLib.compare('new-password', fresh.password), 'new password must work');
+  assert.equal(await bcryptLib.compare('old-password', fresh.password), false, 'old password must stop working');
+});
+
+test('POST /auth/reset-password does not return a session (no cookies, no accessToken)', async () => {
+  const { raw } = await makeResettableUser();
+  const res = await request(app).post('/api/auth/reset-password').send({ token: raw, password: 'new-password' });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.accessToken, undefined);
+  assert.equal(res.headers['set-cookie'], undefined);
+});
+
+test('POST /auth/reset-password consumes the token so it cannot be replayed', async () => {
+  const { raw } = await makeResettableUser();
+  const first = await request(app).post('/api/auth/reset-password').send({ token: raw, password: 'new-password' });
+  assert.equal(first.status, 200);
+
+  const replay = await request(app).post('/api/auth/reset-password').send({ token: raw, password: 'another-password' });
+  assert.equal(replay.status, 400);
+});
+
+test('POST /auth/reset-password revokes an existing session refresh token', async () => {
+  const { user, raw } = await makeResettableUser({ refreshToken: 'attacker-held-refresh-token' });
+  await request(app).post('/api/auth/reset-password').send({ token: raw, password: 'new-password' });
+  assert.equal((await User.findById(user._id)).refreshToken, undefined);
+});
+
+test('POST /auth/reset-password verifies an unverified account', async () => {
+  const { user, raw } = await makeResettableUser({
+    emailVerified: false,
+    emailVerificationTokenHash: sha256('pending'),
+  });
+  await request(app).post('/api/auth/reset-password').send({ token: raw, password: 'new-password' });
+
+  const fresh = await User.findById(user._id);
+  assert.equal(fresh.emailVerified, true);
+  assert.equal(fresh.emailVerificationTokenHash, undefined);
+});
+
+test('POST /auth/reset-password 400s on an expired token and leaves the password alone', async () => {
+  const { user, raw } = await makeResettableUser({
+    passwordResetExpiresAt: new Date(Date.now() - 1000),
+  });
+  const res = await request(app).post('/api/auth/reset-password').send({ token: raw, password: 'new-password' });
+  assert.equal(res.status, 400);
+  assert.ok(await bcryptLib.compare('old-password', (await User.findById(user._id)).password));
+});
+
+test('POST /auth/forgot-password answers identically for known and unknown emails', async () => {
+  const { user } = await makeResettableUser();
+
+  const known = await request(app).post('/api/auth/forgot-password').send({ email: user.email });
+  const unknown = await request(app).post('/api/auth/forgot-password').send({ email: 'nobody@x.com' });
+
+  assert.equal(known.status, unknown.status);
+  assert.deepEqual(known.body, unknown.body, 'response must not reveal whether the account exists');
+});
+
+test('POST /auth/forgot-password issues a hashed token, never storing the raw one', async () => {
+  const { user } = await makeResettableUser({ passwordResetTokenHash: undefined, passwordResetExpiresAt: undefined });
+  await request(app).post('/api/auth/forgot-password').send({ email: user.email });
+
+  const fresh = await User.findById(user._id);
+  assert.ok(fresh.passwordResetTokenHash, 'a reset token hash must be stored');
+  assert.match(fresh.passwordResetTokenHash, /^[a-f0-9]{64}$/, 'stored value must be a sha256 hex digest');
+  assert.ok(fresh.passwordResetExpiresAt > new Date(), 'token must not be born expired');
+});
+
 // ---- CSV export neutralizes spreadsheet formula injection ----
 test('GET /export/csv prefixes formula-injection cells', async () => {
   const { user, auth } = await makeUser();
