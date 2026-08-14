@@ -4,11 +4,14 @@ const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
 const User = require('../models/User');
 const { createAccessToken, createRefreshToken } = require('../utils/tokens');
-const { sendVerificationEmail } = require('../services/email');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/email');
 
 const isProd = process.env.NODE_ENV === 'production';
 const APP_URL = process.env.APP_URL || 'https://www.smarthabittracker.online';
 const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
+// Deliberately far shorter than VERIFICATION_TTL_MS — this token can take over
+// an account, so a stale inbox is a much bigger exposure.
+const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 
 function hashToken(raw) {
   return crypto.createHash('sha256').update(raw).digest('hex');
@@ -18,6 +21,14 @@ async function issueVerificationToken(user) {
   const raw = crypto.randomBytes(32).toString('hex');
   user.emailVerificationTokenHash = hashToken(raw);
   user.emailVerificationExpiresAt = new Date(Date.now() + VERIFICATION_TTL_MS);
+  await user.save();
+  return raw;
+}
+
+async function issueResetToken(user) {
+  const raw = crypto.randomBytes(32).toString('hex');
+  user.passwordResetTokenHash = hashToken(raw);
+  user.passwordResetExpiresAt = new Date(Date.now() + PASSWORD_RESET_TTL_MS);
   await user.save();
   return raw;
 }
@@ -142,46 +153,6 @@ exports.googleLogin = async (req, res, next) => {
   }
 };
 
-exports.phoneLogin = async (req, res, next) => {
-  try {
-    const { idToken } = req.body;
-    if (!idToken) return res.status(400).json({ message: 'Firebase ID token is required' });
-
-    const decoded = await admin.auth().verifyIdToken(idToken);
-
-    // Defense-in-depth: the token signature is already verified above, but
-    // assert it was issued via the phone sign-in provider so a token minted
-    // through another provider (e.g. Google) can't be POSTed here.
-    if (decoded.firebase?.sign_in_provider !== 'phone') {
-      return res.status(401).json({ message: 'Token was not issued via phone sign-in' });
-    }
-
-    const phone = decoded.phone_number;
-    if (!phone) return res.status(400).json({ message: 'Token does not contain a phone number' });
-
-    let user = await User.findOne({ phone });
-    if (!user) {
-      user = await User.create({
-        name: decoded.name || 'there',
-        phone,
-        phoneVerified: true,
-      });
-    }
-
-    const accessToken = createAccessToken({ id: user._id });
-    const refreshToken = createRefreshToken({ id: user._id });
-    user.refreshToken = refreshToken;
-    await user.save();
-
-    setCookieAndRespond(res, user, accessToken, refreshToken);
-  } catch (err) {
-    if (err.code === 'auth/id-token-expired' || err.code === 'auth/argument-error') {
-      return res.status(401).json({ message: 'Invalid or expired phone token' });
-    }
-    next(err);
-  }
-};
-
 exports.verifyEmail = async (req, res, next) => {
   // The email link now points at the frontend /verify page, which fetches this
   // endpoint with `Accept: application/json` and shows a branded result. Old
@@ -229,6 +200,66 @@ exports.resendVerification = async (req, res, next) => {
     }
 
     res.json({ ok: true, message: 'If that account needs verification, we sent a new link.' });
+  } catch (err) { next(err); }
+};
+
+// The response is identical whether or not the address is registered, so this
+// endpoint can't be used to enumerate accounts. That also hides a missing
+// RESEND_API_KEY from the caller, hence the server-side log of the send result.
+exports.forgotPassword = async (req, res, next) => {
+  const generic = {
+    ok: true,
+    message: 'If an account exists for that email, we sent a reset link.',
+  };
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (user?.email) {
+      const rawToken = await issueResetToken(user);
+      const resetUrl = `${APP_URL}/reset-password?token=${rawToken}`;
+      const result = await sendPasswordResetEmail({ to: user.email, url: resetUrl, name: user.name });
+      console.log(`[auth/forgot-password] reset send result for ${user.email}:`, result);
+    }
+
+    res.json(generic);
+  } catch (err) { next(err); }
+};
+
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+    if (!token) return res.status(400).json({ message: 'Missing reset token.' });
+
+    const user = await User.findOne({
+      passwordResetTokenHash: hashToken(token),
+      passwordResetExpiresAt: { $gt: new Date() },
+    });
+    if (!user) {
+      return res.status(400).json({ message: 'That reset link is invalid or has expired.' });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.passwordResetTokenHash = undefined;
+    user.passwordResetExpiresAt = undefined;
+
+    // Reaching this point proves the user controls the inbox — the same proof
+    // the verification link asks for — so clear any pending verification too.
+    user.emailVerified = true;
+    user.emailVerificationTokenHash = undefined;
+    user.emailVerificationExpiresAt = undefined;
+
+    // Drop the stored refresh token: if someone else was already signed in on
+    // this account, the reset must end their session, not just change the
+    // password they no longer need.
+    user.refreshToken = undefined;
+
+    await user.save();
+
+    // Deliberately no cookies here — the user signs in with the new password.
+    // Keeping this endpoint out of the session-minting business means a leaked
+    // reset token alone never yields a live session.
+    res.json({ ok: true, message: 'Password updated. You can now sign in.' });
   } catch (err) { next(err); }
 };
 

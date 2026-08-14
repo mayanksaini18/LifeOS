@@ -4,7 +4,7 @@ const { body } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const auth = require('../middlewares/auth');
 const validate = require('../middlewares/validate');
-const { register, login, refreshToken, getMe, googleLogin, phoneLogin, logout, verifyEmail, resendVerification } = require('../controllers/authController');
+const { register, login, refreshToken, getMe, googleLogin, logout, verifyEmail, resendVerification, forgotPassword, resetPassword } = require('../controllers/authController');
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -35,14 +35,33 @@ const resendValidation = [
   body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
 ];
 
+// Its own instance rather than reusing resendLimiter: sharing one would let a
+// burst of resend-verification requests lock a user out of password recovery.
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { message: 'Too many password reset requests, please try again later' }
+});
+
+const forgotPasswordValidation = [
+  body('email').trim().isEmail().withMessage('Valid email is required').normalizeEmail(),
+];
+
+const resetPasswordValidation = [
+  body('token').trim().notEmpty().withMessage('Reset token is required'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+    .isLength({ max: 128 }).withMessage('Password must be under 128 characters'),
+];
+
 router.post('/register', authLimiter, registerValidation, validate, register);
 router.post('/login', authLimiter, loginValidation, validate, login);
 router.post('/refresh', authLimiter, refreshToken);
 router.post('/google', authLimiter, googleLogin);
-router.post('/phone', authLimiter, phoneLogin);
 router.post('/logout', logout);
 router.get('/me', auth, getMe);
 router.get('/verify-email', verifyEmail);
 router.post('/resend-verification', resendLimiter, resendValidation, validate, resendVerification);
+router.post('/forgot-password', passwordResetLimiter, forgotPasswordValidation, validate, forgotPassword);
+router.post('/reset-password', authLimiter, resetPasswordValidation, validate, resetPassword);
 
 module.exports = router;
