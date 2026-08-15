@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, waitFor } from 'storybook/test';
+import { expect } from 'storybook/test';
 import { InsightsSection } from './insights-section';
 
 const meta = {
@@ -33,24 +33,25 @@ export const CopyColumnUsesEditorialType: Story = {
 };
 
 /**
- * Both columns are independent `MaskReveal` instances (the product mock on
- * the left, the copy on the right, the right one carrying a stagger delay).
- * Both must actually reveal via the real intersection mechanic — a plain
- * `<div>` standing in for either `MaskReveal` would never gain
- * `animate-mask-in` and this would time out.
+ * Both columns (the product mock on the left, the copy on the right) render
+ * visible on first paint. They were previously independent `MaskReveal`
+ * instances that held their contents at `opacity-0` until an
+ * IntersectionObserver fired — this pins that neither column can be put back
+ * behind a JS-gated reveal.
  */
-export const BothColumnsReveal: Story = {
+export const BothColumnsRender: Story = {
   play: async ({ canvas }) => {
-    // The eyebrow is a direct child of the copy column's MaskReveal root.
+    // The eyebrow is a direct child of the copy column's root.
     const eyebrow = canvas.getByText('Insights & AI');
     const copyColumn = eyebrow.parentElement as HTMLElement;
 
-    // The product-mock card is a direct child of the mock column's
-    // MaskReveal root.
+    // The product-mock card is a direct child of the mock column's root.
     const mockCard = canvas.getByText('This week').closest('div.rounded-2xl') as HTMLElement;
     const mockColumn = mockCard.parentElement as HTMLElement;
 
-    await waitFor(() => expect(copyColumn.className).toContain('animate-mask-in'), { timeout: 2000 });
-    await waitFor(() => expect(mockColumn.className).toContain('animate-mask-in'), { timeout: 2000 });
+    for (const column of [copyColumn, mockColumn]) {
+      await expect(column.className).not.toContain('opacity-0');
+      await expect(getComputedStyle(column).opacity).toBe('1');
+    }
   },
 };

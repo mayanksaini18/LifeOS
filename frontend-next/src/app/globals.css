@@ -57,15 +57,6 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Non-inline: `@theme inline` does NOT emit the custom property, it only
-   inlines the value into generated utilities. The keyframes below reference
-   var(--ease-editorial), so the property must actually exist at :root.
-   `--ease-*` is a real Tailwind v4 namespace, so this also generates an
-   `ease-editorial` utility for one-off transitions. */
-@theme {
-  --ease-editorial: cubic-bezier(0.76, 0, 0.24, 1);
-}
-
 :root {
   --background: #f7f8f6;
   --foreground: #14171a;
@@ -101,10 +92,6 @@
   --warning: #a8762e;
   --warning-foreground: #f7f8f6;
 
-  /* Motion durations. Plain :root vars rather than @theme — Tailwind v4 has no
-     `--duration-*` theme namespace, so these would generate no utility. */
-  --duration-wipe-in: 1.9s;
-  --duration-wipe-out: 1s;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -195,59 +182,10 @@
   to   { opacity: 1; }
 }
 
-/* The editorial wipe. A clip-path reveal + a 40px drift + a weight settle,
-   all on one easing curve. Ends at `clip-path: none` so descenders and
-   overflow aren't clipped once the animation is done. */
-@keyframes mask-in {
-  0%   { clip-path: polygon(0 0, 0 0, 0 200%, 0 200%);          font-weight: 400; translate: 0; }
-  50%  { clip-path: polygon(0 0, 110% 0, 110% 200%, 0 200%);    font-weight: 400; translate: 40px; }
-  99%  { clip-path: polygon(0 0, 110% 0, 110% 200%, 0 200%);    font-weight: 300; translate: 0; }
-  100% { clip-path: none;                                        font-weight: 300; translate: 0; }
-}
-
-/* Hero only. Two stacked copies: the serif wipes in while the sans fades out
-   beneath the moving edge, reading as a sans→serif morph. */
-@keyframes morph-serif-in {
-  0%   { clip-path: polygon(0 0, 0 0, 0 200%, 0 200%);       translate: 0;    opacity: 1; }
-  50%  { clip-path: polygon(0 0, 110% 0, 110% 200%, 0 200%); translate: 40px; opacity: 0; }
-  75%  { opacity: 1; }
-  100% { clip-path: none;                                     translate: 0;    opacity: 1; }
-}
-@keyframes morph-sans-out {
-  0%   { clip-path: polygon(0 0, 0 0, 0 200%, 0 200%);       translate: 0;    opacity: 1; }
-  50%  { clip-path: polygon(0 0, 110% 0, 110% 200%, 0 200%); translate: 40px; opacity: 1; }
-  75%  { opacity: 0; }
-  100% { clip-path: polygon(0 0, 110% 0, 110% 200%, 0 200%); translate: 0;    opacity: 0; }
-}
-
-@keyframes word-out {
-  0%   { clip-path: polygon(0 0, 110% 0, 110% 200%, 0 200%);       translate: 0; }
-  100% { clip-path: polygon(110% 0, 110% 0, 110% 200%, 110% 200%); translate: 40px; }
-}
-
 .animate-float       { animation: float     5s ease-in-out infinite; }
 .animate-float-sm    { animation: float-sm  4s ease-in-out infinite; }
 .animate-fade-in-up  { animation: fade-in-up  0.6s ease-out both; }
 .animate-fade-in     { animation: fade-in     0.5s ease-out both; }
-.animate-mask-in        { animation: mask-in         var(--duration-wipe-in)  var(--ease-editorial) forwards; }
-.animate-morph-serif-in { animation: morph-serif-in  var(--duration-wipe-in)  var(--ease-editorial) forwards; }
-.animate-morph-sans-out { animation: morph-sans-out  var(--duration-wipe-in)  var(--ease-editorial) forwards; }
-.animate-word-in        { animation: mask-in         var(--duration-wipe-in)  var(--ease-editorial) forwards; }
-.animate-word-out       { animation: word-out        var(--duration-wipe-out) var(--ease-editorial) forwards; }
-
-/* Motion is opt-in. Every wipe collapses to "already arrived". */
-@media (prefers-reduced-motion: reduce) {
-  .animate-mask-in,
-  .animate-morph-serif-in,
-  .animate-morph-sans-out,
-  .animate-word-in,
-  .animate-word-out {
-    animation: none;
-    clip-path: none;
-    opacity: 1;
-    translate: 0;
-  }
-}
 
 /* Editorial type roles. Used across the landing sections; defined once so the
    voice stays consistent and a change lands everywhere. */

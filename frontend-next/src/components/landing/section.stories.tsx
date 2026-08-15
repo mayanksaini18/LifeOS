@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, waitFor } from 'storybook/test';
+import { expect } from 'storybook/test';
 import { SectionHeading } from './section';
 
 const meta = {
@@ -11,10 +11,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /**
- * SectionHeading renders `<MaskReveal className={...}>` as its own root
+ * SectionHeading renders a plain `<div className={...}>` as its own root
  * element (eyebrow/title/subtitle are direct children, no extra wrapper), so
- * the title's `parentElement` IS the MaskReveal wrapper carrying both the
- * alignment classes and the reveal-state class.
+ * the title's `parentElement` IS the wrapper carrying the alignment classes.
  */
 function getWrapper(canvas: { getByRole: (role: string, opts: { name: RegExp }) => HTMLElement }) {
   const title = canvas.getByRole('heading', { name: /everything in one place/i });
@@ -38,13 +37,13 @@ export const EditorialHeading: Story = {
     await expect(wrapper.className).not.toContain('text-center');
     await expect(wrapper.className).not.toContain('mx-auto');
 
-    // Headline claim: "Wipes in on scroll" — the wrapper must be the real
-    // `MaskReveal` (applies `animate-mask-in` once its IntersectionObserver
-    // fires), not the old `Reveal` (applies `animate-fade-in-up` instead)
-    // and not a plain `<div>` (never gains any reveal class, so this
-    // `waitFor` would time out).
-    await waitFor(() => expect(wrapper.className).toContain('animate-mask-in'), { timeout: 2000 });
-    await expect(wrapper.className).not.toContain('animate-fade-in-up');
+    // Renders statically. The former `MaskReveal` root held its children at
+    // `opacity-0` until an IntersectionObserver fired, which put the copy
+    // behind client JS — if the observer never ran, the section stayed
+    // invisible. Assert the wrapper is visible on first paint, so no
+    // JS-gated reveal can be reintroduced without failing here.
+    await expect(wrapper.className).not.toContain('opacity-0');
+    await expect(getComputedStyle(wrapper).opacity).toBe('1');
   },
 };
 

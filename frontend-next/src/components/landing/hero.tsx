@@ -1,17 +1,7 @@
 import Link from "next/link";
 import { ArrowRight01Icon, ArrowDown01Icon } from "hugeicons-react";
 import { buttonVariants } from "@/components/ui/button-variants";
-import { MorphHeadline } from "@/components/motion/morph-headline";
-import { RotatingWord } from "@/components/motion/rotating-word";
 import { cn } from "@/lib/utils";
-
-/**
- * Hoisted to module scope: RotatingWord's effect deps are [words, interval].
- * An inline array literal here would be a new reference on every Hero
- * re-render, tearing down and restarting the observer/timer before the
- * interval elapses — the rotation would silently stall.
- */
-const HERO_ROTATING_WORDS = ["yourself", "your sleep", "your mood", "your habits"];
 
 /**
  * Hero — the opening section of the /welcome marketing page.
@@ -19,6 +9,11 @@ const HERO_ROTATING_WORDS = ["yourself", "your sleep", "your mood", "your habits
  * Deliberately a marketing surface rather than a signup form: one CTA to
  * /register, which owns the three auth methods. The previous version embedded
  * all three here, which left no room for the page to breathe.
+ *
+ * Renders statically: the headline and subheading are plain markup, with no
+ * client component gating their visibility. The former morph/rotate treatment
+ * held both behind `opacity-0` until fonts resolved and a timer ran, which put
+ * the page's primary message at the mercy of client JS.
  */
 export function Hero() {
   return (
@@ -28,19 +23,14 @@ export function Hero() {
           LifeOS · Daily wellness
         </p>
 
-        <MorphHeadline
-          text="A better way to take care of yourself."
-          className="max-w-4xl text-5xl font-light leading-none tracking-[-0.035em] md:text-7xl lg:text-8xl"
-        />
+        <h1 className="max-w-4xl font-heading text-5xl font-light leading-none tracking-[-0.035em] md:text-7xl lg:text-8xl">
+          A better way to take care of yourself.
+        </h1>
 
         <p className="mt-8 max-w-md text-base leading-relaxed text-muted-foreground">
-          Habits, mood, sleep, hydration, fitness, and insights — organized in
-          one place. Quietly keeping track of{" "}
-          <RotatingWord
-            words={HERO_ROTATING_WORDS}
-            className="text-foreground"
-          />
-          
+          Habits, mood, sleep, hydration, fitness, and insights. All in one
+          place. Quietly keeping track of{" "}
+          <span className="text-foreground">yourself</span>.
         </p>
 
         <div className="mt-12">

@@ -30,12 +30,11 @@ export const SingleCta: Story = {
 export const HeadlineAnnouncedOnce: Story = {
   play: async ({ canvas }) => {
     // getByRole (singular) throws if 0 or >1 <h1> match, preserving the
-    // original structural guarantee. toHaveAccessibleName then goes further:
-    // MorphHeadline stacks a visible serif span and a decorative sans span
-    // inside that one <h1>. If the sans span's aria-hidden is ever dropped,
-    // its text is folded into the accessible name too, so the name no longer
-    // equals the single sentence — the element count alone would stay 1 and
-    // miss that defect entirely.
+    // structural guarantee. toHaveAccessibleName goes further and pins the
+    // name to exactly one sentence: the headline previously stacked a visible
+    // serif span over a decorative aria-hidden sans copy to fake a morph, and
+    // any duplicated-text treatment folded into the accessible name would fail
+    // here while an element count alone would still read 1.
     const heading = canvas.getByRole('heading', { level: 1 });
     await expect(heading).toHaveAccessibleName('A better way to take care of yourself.');
   },

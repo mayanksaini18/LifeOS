@@ -5,7 +5,6 @@ import {
   Target01Icon,
 } from "hugeicons-react";
 import { Section, SectionHeading } from "@/components/landing/section";
-import { MaskReveal } from "@/components/motion/mask-reveal";
 
 /**
  * Habits-module intensity ramp for the habit heatmap, mirroring the emerald
@@ -61,7 +60,7 @@ export function GamificationSection() {
         subtitle="Small wins, gently rewarded. Streaks, levels, and light weekly challenges keep you coming back."
       />
 
-      <MaskReveal className="mt-14 md:mt-16">
+      <div className="mt-14 md:mt-16">
         <div className="rounded-2xl border bg-card p-6 md:p-8">
           {/* Habit heatmap — full width */}
           <div className="flex flex-wrap items-center gap-2">
@@ -163,7 +162,7 @@ export function GamificationSection() {
             </div>
           </div>
         </div>
-      </MaskReveal>
+      </div>
     </Section>
   );
 }
