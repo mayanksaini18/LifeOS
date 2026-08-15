@@ -65,7 +65,7 @@ export const LANDING_MODULES: LandingModule[] = [
     href: "/water",
     icon: DropletIcon,
     label: "Water",
-    blurb: "Stay hydrated with a single tap — one glass at a time.",
+    blurb: "Stay hydrated with a single tap, one glass at a time.",
     iconColor: "text-module-water",
     iconBg: "bg-module-water/10",
     ring: "border-module-water/20",
@@ -117,7 +117,7 @@ export const LANDING_STEPS: LandingStep[] = [
     n: "01",
     title: "Track it",
     blurb:
-      "Log mood, sleep, water, habits, and workouts in seconds — no fuss, no friction.",
+      "Log mood, sleep, water, habits, and workouts in seconds. No fuss, no friction.",
   },
   {
     n: "02",
@@ -129,7 +129,7 @@ export const LANDING_STEPS: LandingStep[] = [
     n: "03",
     title: "Keep going",
     blurb:
-      "Streaks, levels, and light weekly challenges make showing up feel good — so it lasts.",
+      "Streaks, levels, and light weekly challenges make showing up feel good, so it lasts.",
   },
 ];
 
