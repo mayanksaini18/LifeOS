@@ -62,7 +62,7 @@ async function processReminders() {
       // Push
       if (process.env.VAPID_PUBLIC_KEY && user.pushSubscriptions?.length) {
         const pushPayloads = {
-          mood:     { title: 'How are you feeling?',  body: "Log today's mood — it only takes a second.", url: '/mood' },
+          mood:     { title: 'How are you feeling?',  body: "Log today's mood. It only takes a second.", url: '/mood' },
           sleep:    { title: 'How did you sleep?',    body: "Track last night's rest.",                   url: '/sleep' },
           water:    { title: 'Stay hydrated!',        body: "Don't forget to log your water intake.",     url: '/water' },
           exercise: { title: 'Time to move!',         body: 'Log your workout for today.',                url: '/fitness' },

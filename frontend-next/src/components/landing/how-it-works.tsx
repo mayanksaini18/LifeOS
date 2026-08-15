@@ -4,7 +4,6 @@ import {
   Fire02Icon,
 } from "hugeicons-react";
 import { Section, SectionHeading } from "@/components/landing/section";
-import { MaskReveal } from "@/components/motion/mask-reveal";
 import { LANDING_STEPS, type IconType } from "@/lib/landing-data";
 
 /**
@@ -31,11 +30,7 @@ export function HowItWorks() {
         {LANDING_STEPS.map((step, index) => {
           const Icon = STEP_ICONS[index];
           return (
-            <MaskReveal
-              key={step.n}
-              delay={index * 80}
-              className="border-t border-border pt-8"
-            >
+            <div key={step.n} className="border-t border-border pt-8">
               <p className="label-mono">{step.n}</p>
 
               <h3 className="display-heading mt-3 flex items-center gap-2 text-3xl">
@@ -46,7 +41,7 @@ export function HowItWorks() {
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {step.blurb}
               </p>
-            </MaskReveal>
+            </div>
           );
         })}
       </div>

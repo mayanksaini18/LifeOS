@@ -4,7 +4,6 @@ import {
   AiChat01Icon,
 } from "hugeicons-react";
 import { Section } from "@/components/landing/section";
-import { MaskReveal } from "@/components/motion/mask-reveal";
 
 /** Deterministic weekly bar heights (% of the track), SSR-stable. */
 const BARS: { height: number; day: string; highlight?: boolean }[] = [
@@ -40,7 +39,7 @@ export function InsightsSection() {
     <Section id="insights">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         {/* Left — product mock */}
-        <MaskReveal>
+        <div>
           <div className="rounded-2xl border bg-card p-5 shadow-sm">
             {/* Header row */}
             <div className="flex items-center gap-3">
@@ -96,23 +95,23 @@ export function InsightsSection() {
                 <span className="flex items-start gap-2">
                   <AiChat01Icon className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" />
                   <span className="leading-relaxed">
-                    Really steady — 7h 20m on average, and your best nights
+                    Really steady: 7h 20m on average, and your best nights
                     followed your evening walks.
                   </span>
                 </span>
               </div>
             </div>
           </div>
-        </MaskReveal>
+        </div>
 
         {/* Right — copy */}
-        <MaskReveal delay={80}>
+        <div>
           <p className="label-mono mb-3">Insights &amp; AI</p>
           <h2 className="display-heading text-3xl leading-[1.15] md:text-4xl">
             Your data, gently understood.
           </h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            LifeOS turns your small daily logs into quiet, useful patterns — the
+            LifeOS turns your small daily logs into quiet, useful patterns, the
             kind you would never spot on your own. It is here to help you notice,
             never to judge.
           </p>
@@ -135,7 +134,7 @@ export function InsightsSection() {
               );
             })}
           </div>
-        </MaskReveal>
+        </div>
       </div>
     </Section>
   );

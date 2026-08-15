@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, waitFor } from 'storybook/test';
+import { expect } from 'storybook/test';
 import { HowItWorks } from './how-it-works';
 
 const meta = {
@@ -18,9 +18,8 @@ type Story = StoryObj<typeof meta>;
  * ever dropped or renamed. Also guards the structural change this task made
  * — boxed cards with an absolute-positioned connecting hairline became plain
  * `border-t` rows — by asserting no `absolute`-positioned decoration remains
- * inside a step (the old connector) and that the row wipes in via the real
- * `MaskReveal` mechanic (`animate-mask-in`), not the retired `Reveal`'s
- * `animate-fade-in-up`.
+ * inside a step (the old connector), and that the row renders visible rather
+ * than behind a JS-gated reveal.
  */
 export const StepsRevealWithEditorialType: Story = {
   play: async ({ canvas }) => {
@@ -35,8 +34,8 @@ export const StepsRevealWithEditorialType: Story = {
     await expect(getComputedStyle(numeral).fontFamily).toMatch(/JetBrains/i);
     await expect(getComputedStyle(numeral).textTransform).toBe('uppercase');
 
-    // The numeral, heading, and blurb are direct children of the
-    // MaskReveal row (mirrors section.stories.tsx's `getWrapper` pattern).
+    // The numeral, heading, and blurb are direct children of the step row
+    // (mirrors section.stories.tsx's `getWrapper` pattern).
     const row = heading.parentElement as HTMLElement;
     await expect(row.className).toContain('border-t');
 
@@ -47,21 +46,22 @@ export const StepsRevealWithEditorialType: Story = {
     const absoluteDescendant = row.querySelector('[class*="absolute"]');
     await expect(absoluteDescendant).toBeNull();
 
-    // Real reveal-on-scroll mechanic, not a static class.
-    await waitFor(() => expect(row.className).toContain('animate-mask-in'), { timeout: 2000 });
-    await expect(row.className).not.toContain('animate-fade-in-up');
+    // Rows render visible. The former `MaskReveal` wrapper held each row at
+    // `opacity-0` until an IntersectionObserver fired; if it never did, the
+    // steps stayed blank. No reveal class may gate them again.
+    await expect(row.className).not.toContain('opacity-0');
+    await expect(getComputedStyle(row).opacity).toBe('1');
   },
 };
 
 /**
  * All three steps render, each paired with its own icon, in source order.
- * Waits for the reveal first — `MaskReveal` starts every row at `opacity-0`
- * until its `IntersectionObserver` fires, so an unconditional `toBeVisible()`
- * right after mount is racing the reveal, not testing the content.
+ * Asserts visibility directly: with the reveal removed, the rows are visible
+ * on first paint, so there is no longer anything to wait for.
  */
 export const AllThreeStepsRender: Story = {
   play: async ({ canvas }) => {
-    await waitFor(() => expect(canvas.getByText('01')).toBeVisible(), { timeout: 2000 });
+    await expect(canvas.getByText('01')).toBeVisible();
     await expect(canvas.getByText('02')).toBeVisible();
     await expect(canvas.getByText('03')).toBeVisible();
     await expect(canvas.getByRole('heading', { name: /track it/i })).toBeVisible();

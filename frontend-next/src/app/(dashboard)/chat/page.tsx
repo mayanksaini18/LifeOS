@@ -97,7 +97,7 @@ export default function ChatPage() {
             <div>
               <p className="text-sm font-medium">Ask your coach anything</p>
               <p className="text-xs text-muted-foreground mt-1">
-                It can see your tracked data — mood, sleep, water, exercise, habits, journal.
+                It can see your tracked data: mood, sleep, water, exercise, habits, journal.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-lg mx-auto">

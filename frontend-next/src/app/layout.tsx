@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { SwRegister } from "@/components/providers/sw-register";
 
 export const metadata: Metadata = {
-  title: "LifeOS — Wellness Dashboard",
+  title: "LifeOS: Wellness Dashboard",
   description:
     "Track habits, mood, sleep, fitness and more. Your all-in-one wellness platform.",
 };

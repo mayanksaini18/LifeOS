@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { MaskReveal } from "@/components/motion/mask-reveal";
 
 /**
  * Section — the shared vertical-rhythm + container wrapper every landing
@@ -33,9 +32,8 @@ export function Section({
 }
 
 /**
- * SectionHeading — canonical eyebrow / title / subtitle stack. Wipes in on
- * scroll. Left-aligned by default; pass align="center" for the rare centered
- * header.
+ * SectionHeading — canonical eyebrow / title / subtitle stack. Left-aligned by
+ * default; pass align="center" for the rare centered header.
  */
 export function SectionHeading({
   eyebrow,
@@ -51,7 +49,7 @@ export function SectionHeading({
   className?: string;
 }) {
   return (
-    <MaskReveal
+    <div
       className={cn(
         "max-w-3xl",
         align === "center" && "mx-auto text-center",
@@ -71,6 +69,6 @@ export function SectionHeading({
           {subtitle}
         </p>
       ) : null}
-    </MaskReveal>
+    </div>
   );
 }

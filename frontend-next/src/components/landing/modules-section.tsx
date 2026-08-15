@@ -16,7 +16,7 @@ export function ModulesSection() {
       <SectionHeading
         eyebrow="Everything in one place"
         title="One calm home for everything you track."
-        subtitle="Mood, sleep, water, habits, fitness, and insights — gently connected, never overwhelming."
+        subtitle="Mood, sleep, water, habits, fitness, and insights. Gently connected, never overwhelming."
       />
 
       <HorizontalScroll className="mt-14 -mx-6 px-6 md:-mx-16 md:px-16">

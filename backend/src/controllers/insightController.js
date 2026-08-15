@@ -189,7 +189,7 @@ exports.getCorrelations = async (req, res, next) => {
           title: r > 0 ? 'Hydration lifts your mood' : 'Water intake and mood are inversely linked',
           description: r > 0
             ? `Days when you drink more water correlate with higher mood scores. Staying hydrated is paying off.`
-            : `You tend to track lower mood on high-water days — could be that you drink more when you feel off. Consider tracking why.`,
+            : `You tend to track lower mood on high-water days. It could be that you drink more when you feel off. Consider tracking why.`,
           strength: str,
           direction: direction(r),
           r,
@@ -216,7 +216,7 @@ exports.getCorrelations = async (req, res, next) => {
           title: r > 0 ? 'Exercise improves your sleep' : 'Exercise days linked to shorter sleep',
           description: r > 0
             ? `On days you work out, you tend to sleep longer. Your body is rewarding the effort.`
-            : `You seem to sleep less on exercise days — possibly due to late workouts or higher energy. Try exercising earlier in the day.`,
+            : `You seem to sleep less on exercise days, possibly due to late workouts or higher energy. Try exercising earlier in the day.`,
           strength: str,
           direction: direction(r),
           r,
@@ -247,7 +247,7 @@ exports.getCorrelations = async (req, res, next) => {
           title: r > 0 ? 'Completing habits boosts mood' : 'High habit days and mood don\'t align',
           description: r > 0
             ? `Days with more habit completions tend to have higher mood scores. Consistency is building your sense of progress.`
-            : `You rate your mood lower on high-habit days. This might mean you're pushing too hard — consider whether your goals are sustainable.`,
+            : `You rate your mood lower on high-habit days. This might mean you're pushing too hard, so consider whether your goals are sustainable.`,
           strength: str,
           direction: direction(r),
           r,
@@ -355,7 +355,7 @@ exports.getCorrelations = async (req, res, next) => {
           title: r > 0 ? 'Hydration powers your energy' : 'Water intake and energy don\'t align',
           description: r > 0
             ? `Days with higher water intake correlate with more energy. Keep drinking!`
-            : `More water doesn't seem to boost your energy — consider whether other factors like sleep or stress are dominating.`,
+            : `More water doesn't seem to boost your energy. Consider whether other factors like sleep or stress are dominating.`,
           strength: str,
           direction: direction(r),
           r,

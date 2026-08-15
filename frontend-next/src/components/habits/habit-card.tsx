@@ -108,7 +108,7 @@ export function HabitCard({ habit, onCheckin, pending = false }: HabitCardProps)
               {hasFreezeAvailable && !hasCheckedToday && habit.streak > 0 && (
                 <span
                   className="inline-flex items-center gap-0.5 text-xs text-blue-500"
-                  title="Streak freeze available — miss a day and your streak is protected"
+                  title="Streak freeze available. Miss a day and your streak is protected."
                 >
                   <SnowIcon className="h-3 w-3" />
                 </span>

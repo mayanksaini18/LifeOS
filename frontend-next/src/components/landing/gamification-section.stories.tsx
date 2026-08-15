@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import { expect, waitFor } from 'storybook/test';
+import { expect } from 'storybook/test';
 import { GamificationSection } from './gamification-section';
 
 const meta = {
@@ -31,15 +31,16 @@ export const StatCaptionsUseLabelMono: Story = {
 };
 
 /**
- * The whole stat card is one `MaskReveal` instance wrapping the heatmap and
- * the three tiles. Confirms it actually reveals via the real intersection
- * mechanic, not the retired `Reveal`'s different animation class.
+ * The stat card wrapping the heatmap and the three tiles renders visible on
+ * first paint. It was previously a `MaskReveal` instance that held the whole
+ * card at `opacity-0` until an IntersectionObserver fired — this pins that it
+ * cannot be put back behind a JS-gated reveal.
  */
-export const CardReveals: Story = {
+export const CardRenders: Story = {
   play: async ({ canvas }) => {
     const card = canvas.getByText('Habit consistency').closest('.rounded-2xl')
       ?.parentElement as HTMLElement;
-    await waitFor(() => expect(card.className).toContain('animate-mask-in'), { timeout: 2000 });
-    await expect(card.className).not.toContain('animate-fade-in-up');
+    await expect(card.className).not.toContain('opacity-0');
+    await expect(getComputedStyle(card).opacity).toBe('1');
   },
 };
